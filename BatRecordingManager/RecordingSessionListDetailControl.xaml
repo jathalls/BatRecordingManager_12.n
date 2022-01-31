@@ -1,0 +1,309 @@
+﻿<UserControl x:Class="BatRecordingManager.RecordingSessionListDetailControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:BatRecordingManager"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1200">
+
+    <Grid
+        x:Name="FullWindowGrid"
+        Background="{StaticResource WindowBackgroundBrush}">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="28*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="35*" />
+        </Grid.ColumnDefinitions>
+
+        <GridSplitter Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch" />
+        <Grid
+            Grid.Row="0"
+            Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100*" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="50*" />
+            </Grid.RowDefinitions>
+            <GridSplitter Grid.Row="1" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+            <Grid
+                x:Name="LeftPaneUpperPanelGrid"
+                Grid.Column="0"
+                Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25" />
+
+                    <RowDefinition Height="100*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel
+                    Orientation="Horizontal"
+                    Grid.Row="0" Grid.Column="0"
+                    Background="{StaticResource BlueGradientBackground}">
+                    <Label
+                        Style="{StaticResource SimpleLabel}"
+                        ToolTip="Click to Refresh data in the list"
+                        Content="Sessions:- "
+                           MouseLeftButtonUp="Label_MouseLeftButtonUp" />
+                    <Button
+                        x:Name="AddRecordingSessionButton"
+                        Width="50" Height="25"
+                        Content="ADD"
+                        ToolTip="Manually define a new recording session"
+                        Style="{StaticResource SimpleButton}" Click="AddRecordingSessionButton_Click" />
+
+                    <Button
+                        x:Name="EditRecordingSessionButton"
+                        Width="50" Height="25"
+                        Content="EDIT"
+                        IsEnabled="False"
+                        ToolTip="Edit the details of the selected recording session"
+                        Style="{StaticResource SimpleButton}" Click="EditRecordingSessionButton_Click" />
+                    <Button
+                        x:Name="DeleteRecordingSessionButton"
+                        Width="50" Height="25"
+                        Content="DEL"
+                        IsEnabled="False"
+                        ToolTip="Delete the selected recording session or sessions
+                        from the database"
+                        Style="{StaticResource SimpleButton}" Click="DeleteRecordingSessionButton_Click" />
+                    <Button
+                        x:Name="ExportSessionDataButton"
+                        Width="50" Height="25"
+                        Content="Export"
+                        IsEnabled="False"
+                        ToolTip="Re-writes all the .txt files for the recordings in this session.  Overwrites existing files. [CTRL-CLICK] only writes missing files"
+                        Style="{StaticResource SimpleButton}" Click="ExportSessionDataButton_Click">
+                    </Button>
+                    <Button
+                         x:Name="ShowMapButton"
+                        Style="{StaticResource SimpleButton}"
+                        IsEnabled="true"
+                        Content="Map" Click="ShowMapButton_Click" />
+                    <Button
+                        x:Name="SplitByDateButton"
+                        Style="{StaticResource SimpleButton}"
+                        IsEnabled="False"
+                        ToolTip="Splits the selected session into separate 24-hour noon-noon sessions"
+                        Content="Split" Click="SplitByDateButton_Click" />
+                    <Button
+                        x:Name="ReportSessionDataButton"
+                        Width="50" Height="25"
+                        Content="Report"
+                        IsEnabled="True"
+                        ToolTip="Generate a report for the selected sessions"
+                        Style="{StaticResource SimpleButton}" Click="ReportSessionDataButton_Click" />
+                    <Button
+                        x:Name="CompareImagesButton"
+                        Width="70"
+                        Height="25"
+                        Content="COMP-All"
+                        IsEnabled="False"
+                        ToolTip="Adds ALL the images for the selected session to the comparison window"
+                        Style="{StaticResource SimpleButton}" Click="CompareImagesButton_Click">
+                    </Button>
+                </StackPanel>
+                <Grid
+                    Background="{StaticResource WindowBackgroundBrush}"
+                    Grid.Row="1" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="213*" />
+                        <ColumnDefinition Width="15*" />
+                        <ColumnDefinition Width="56*" />
+                        <ColumnDefinition Width="158*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="597*" />
+                    </Grid.RowDefinitions>
+                    <!--<StackPanel
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        x:Name="NavigationStackPanel"
+                        Orientation="Horizontal">
+                        <Button
+                            x:Name="NavToStartButton"
+                            Style="{StaticResource SimpleButton}"
+                            Content="&lt;&lt;" Click="NavToStartButton_Click"
+                            ToolTip="Load First Page from DB">
+                        </Button>
+                        <Button
+                            x:Name="NavToPrevPage"
+                            Style="{StaticResource SimpleButton}"
+                            ToolTip="Load Previous Page fromm DB"
+                            Content="&lt;" Click="NavToPrevPage_Click" />
+                        <ComboBox
+                            x:Name="NavOrderByComboBox"
+                            Style="{StaticResource SimpleComboBox}"
+                            ToolTip="Sort Database on selected field, ^- lo to hi; v- hi to lo"
+                            Width="150" SelectionChanged="NavOrderByComboBox_SelectionChanged">
+                            <ComboBoxItem Content="NONE" IsSelected="True" />
+                            <ComboBoxItem Content="DATE^" />
+                            <ComboBoxItem Content="DATEv" />
+                            <ComboBoxItem Content="TAG^" />
+                            <ComboBoxItem Content="TAGv" />
+                            <ComboBoxItem Content="LOCATION^" />
+                            <ComboBoxItem Content="LOCATIONv" />
+                            <ComboBoxItem Content="RECORDINGS^" />
+                            <ComboBoxItem Content="RECORDINGSv" />
+                        </ComboBox>
+                        <Button
+                            x:Name="NavToNextPage"
+                            Style="{StaticResource SimpleButton}"
+                            ToolTip="Load Next Page from DB"
+                            Content="&gt;" Click="NavToNextPage_Click" />
+                        <Button
+                            x:Name="NavToLastPage"
+                            Style="{StaticResource SimpleButton}"
+                            ToolTip="Load Last Page from DB"
+                            Content="&gt;&gt;" Click="NavToLastPage_Click" />
+                        <ComboBox
+                            x:Name="PageSizeComboBox"
+                            Style="{StaticResource SimpleComboBox}"
+                            ToolTip="Select Number of Items to Display on each Page"
+                            Width="50"
+                            SelectionChanged="PageSizeComboBox_SelectionChanged"
+                            DropDownClosed="PageSizeComboBox_DropDownClosed">
+                            <ComboBoxItem Content="10" />
+                            <ComboBoxItem Content="25" />
+                            <ComboBoxItem Content="50" />
+                            <ComboBoxItem Content="100" />
+                            <ComboBoxItem Content="All" IsSelected="True" />
+                            <ComboBoxItem />
+                        </ComboBox>
+                    </StackPanel>-->
+
+                    <DataGrid
+                        x:Name="RecordingSessionListView"
+
+                        Grid.Column="0"
+                        Grid.Row="1"
+                        Style="{StaticResource VdgStyle}"
+                        SelectionChanged="RecordingSessionListView_SelectionChanged"
+                        IsSynchronizedWithCurrentItem="True"
+                        SelectionMode="Extended"
+
+                        ItemsSource="{Binding recordingSessionDataList}"
+                        AutoGenerateColumns="False"
+                        EnableRowVirtualization="True"
+                        ScrollViewer.CanContentScroll="True"
+                        ScrollViewer.IsDeferredScrollingEnabled="True"
+                        HeadersVisibility="Column"
+                        AreRowDetailsFrozen="True"
+                        CanUserAddRows="False"
+                        CanUserResizeRows="False"
+                        IsReadOnly="True"
+                        IsTextSearchEnabled="True"
+                        
+                        Grid.ColumnSpan="4">
+
+                        <DataGrid.RowStyle>
+                            <Style TargetType="{x:Type DataGridRow}">
+                                <Setter Property="IsSelected" 
+                                    Value="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn x:Name="TagColumn" Binding="{Binding SessionTag}" Header="Tag"
+                                                SortDirection="Ascending" Width="100*" />
+                            <DataGridTextColumn x:Name="LocationColumn" Binding="{Binding Location}" Header="Location"
+                                                SortDirection="Ascending" Width="200*" />
+                            <DataGridTextColumn x:Name="DateColumn"
+                                                Binding="{Binding SessionStartDate, Converter={StaticResource ShortDateConverter}}"
+                                                Header="Date" SortDirection="Ascending" Width="50*" />
+                            <DataGridTextColumn x:Name="TimeColumn" Binding="{Binding StartTime}" Header="Time"
+                                                SortDirection="Ascending" Width="50*" />
+
+                            <DataGridTextColumn
+                                x:Name="ImagesColumn"
+                                Binding="{Binding NumberOfRecordingImages }"
+                                Header="Images"
+                                CanUserSort="True"
+                                SortDirection="Ascending"
+                                Width="40*" />
+                            <DataGridTextColumn x:Name="RecordingsColumn" Binding="{Binding NumberOfRecordings}"
+                                                Header="Recordings" SortDirection="Ascending" Width="50*" />
+                        </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Compare All Images" Click="CompareImagesButton_Click" />
+                                <MenuItem Header="Generate Sonagram Images" Click="GenerateSonagrams_Click" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <!--
+                        <DataGrid.Columns>
+                            <DataGridTextColumn x:Name="TagColumn" Binding="{Binding SessionTag}" Header="Tag" SortDirection="Ascending" Width="50" />
+                            <DataGridTextColumn x:Name="LocationColumn" Binding="{Binding Location}" Header="Location" SortDirection="Ascending" Width="160" />
+                            <DataGridTextColumn x:Name="DateColumn" Binding="{Binding SessionDate, Converter={StaticResource ShortDate_Converter}}" Header="Date" SortDirection="Ascending" Width="70" />
+                            <DataGridTextColumn x:Name="TimeColumn" Binding="{Binding SessionStartTime}" Header="Time" SortDirection="Ascending" Width="60" />
+
+                            <DataGridTextColumn
+                                x:Name="ImagesColumn"
+                                Binding="{Binding Recordings, Converter={StaticResource NumberOfImagesConverter} }"
+                                                Header="Images"
+                                                CanUserSort="True"
+                                                SortDirection="Ascending"
+                                                Width="50" />
+                            <DataGridTextColumn x:Name="RecordingsColumn" Binding="{Binding Recordings.Count}" Header="Recordings" SortDirection="Ascending" Width="50" />
+                        </DataGrid.Columns>-->
+                    </DataGrid>
+                    <!--      </ScrollViewer> -->
+                </Grid>
+            </Grid>
+
+            <local:ImageScrollerControl
+                x:Name="SegmentImageScroller"
+                Grid.Column="0"
+                Grid.Row="2" />
+        </Grid>
+
+        <Grid
+            x:Name="MainWindowRightPaneGrid"
+            Grid.Row="0" Grid.Column="2">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100*" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="100*" />
+            </Grid.RowDefinitions>
+            <GridSplitter Grid.Row="1" ResizeDirection="Auto" Height="5" VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch" />
+
+            <ScrollViewer Grid.Row="0">
+                <StackPanel Orientation="Vertical">
+                    <local:RecordingSessionDetailControl
+                        x:Name="RecordingSessionControl" />
+                    <!-- Recording session control shows the session details /-->
+
+                    <ListView
+                        x:Name="SessionSummaryListView"
+                        ItemsSource="{Binding Path=sessionSummaryList}"
+                        Style="{StaticResource SimpleListView}"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch" SelectionChanged="SessionSummaryListView_SelectionChanged">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem
+                                    x:Name="miBatSonagrams"
+                                    Header="Generate Sonagrams"
+                                    ToolTip="Generate spectrograms for all segments with this bat" Click="miBatSonagrams_Click" />
+                                <MenuItem
+                                    x:Name="miCompareImages"
+                                    Header="Compare Images"
+                                    ToolTip="Add all images for segments with this bat, to the comparison window" Click="miCompareImages_Click" />
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                    </ListView>
+                    <!-- session summary is populated by code when the session selection changes /-->
+                </StackPanel>
+            </ScrollViewer>
+
+            <local:RecordingsDetailListControl
+                Grid.Row="2"
+                x:Name="RecordingsListControl"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled" />
+        </Grid>
+    </Grid>
+</UserControl>

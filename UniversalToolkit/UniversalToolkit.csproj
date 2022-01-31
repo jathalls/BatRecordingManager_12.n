@@ -1,0 +1,93 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <SignAssembly>False</SignAssembly>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Data.OracleClient" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="WPFToolkit.Extended">
+      <HintPath>.\WPFToolkit.Extended.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="MSComctlLib">
+      <Guid>{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>2</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="stdole">
+      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Invisionware.Settings.Sinks.JsonNet" Version="1.1.10" />
+    <PackageReference Include="LinqKit.Core" Version="1.1.27" />
+    <PackageReference Include="LinqStatistics" Version="2.3.0" />
+    <PackageReference Include="LiveCharts.Wpf.Core" Version="0.9.8" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.1" />
+    <PackageReference Include="Microsoft.NETCore.Runtime.CoreCLR" Version="2.0.8" />
+    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.0.487" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.36" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.34" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="6.0.0-preview.5.21301.5" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Serilog" Version="2.11.0-dev-01377" />
+    <PackageReference Include="Shiny.Core" Version="2.5.0.2985-preview" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.6.0-preview3.19128.7" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <PackageReference Include="System.Linq" Version="4.3.0" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.15" />
+    <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
+    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\App.xaml.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\MainWindow.xaml.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\obj\x86\Debug\.NETFramework,Version=v4.0,Profile=Client.AssemblyAttributes.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\obj\x86\Debug\App.g.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\obj\x86\Debug\App.g.i.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\obj\x86\Debug\MainWindow.g.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\obj\x86\Debug\MainWindow.g.i.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\obj\x86\Release\.NETFramework,Version=v4.0,Profile=Client.AssemblyAttributes.cs" />
+    <Compile Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\obj\x86\Release\App.g.cs" />
+    <Compile Remove="WPFDateTime\1150228-727ec0d286a8af05adaaead91db69fe4ff1c5eae\DateTimePicker.xaml.cs" />
+    <Page Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\App.xaml" />
+    <Page Remove="DateTimePickerSample\DateTimePickerSample\DateTimePickerSample\MainWindow.xaml" />
+    <Page Remove="WPFDateTime\1150228-727ec0d286a8af05adaaead91db69fe4ff1c5eae\DateTimePicker.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+</Project>

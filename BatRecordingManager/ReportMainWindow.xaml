@@ -1,0 +1,106 @@
+﻿<Window x:Class="BatRecordingManager.ReportMainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:local="clr-namespace:BatRecordingManager"
+        mc:Ignorable="d"
+        Title="ReportMainWindow" Height="400" Width="800">
+    <!--
+    <Window.Resources>
+        <CollectionViewSource x:Key="ByRecordingDataGridSource" Source="{Binding Path=reportDataByRecordingList}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="recording.RecordingName" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+    -->
+    <Grid
+        Background="{StaticResource WindowBackgroundBrushLight}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="250*" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+
+        <TabControl
+            x:Name="MainWindowTabControl"
+            Background="{StaticResource BlueGradientBackground}">
+            
+            <TabItem
+                x:Name="BySummary"
+                Header="Summary">
+                <local:ReportSummary
+                    x:Name="Report_Summary" />
+            </TabItem>
+            <TabItem
+                x:Name="ByBat"
+                Header="Bats">
+                <local:ReportByBats
+                    x:Name="ReportByBats" />
+            </TabItem>
+
+            <TabItem
+                x:Name="BySession"
+                Header="Sessions">
+                <local:ReportBySessions
+                    x:Name="ReportBySessions" />
+            </TabItem>
+            <TabItem
+                x:Name="ByRecording"
+                Header="Recordings">
+                <local:ReportByRecordings
+                    x:Name="ReportByRecordings" />
+            </TabItem>
+
+            <TabItem
+                x:Name="ByRecordingForAtlas"
+                Header="HertsAtlas">
+                <local:ReportFoHertsAtlas
+                    x:Name="ReportForHertsAtlas" />
+            </TabItem>
+
+            <TabItem
+                x:Name="TestFrequency"
+                Header="Frequency">
+                <local:ReportByFrequency
+                    x:Name="TestReport" />
+            </TabItem>
+            
+        </TabControl>
+        <DockPanel
+            Background="{StaticResource ButtonBarBackground}"
+            Grid.Row="1">
+            <StackPanel
+                x:Name="ButtonBarStackPanel"
+                Background="{StaticResource ButtonBarBackground}"
+                Grid.Row="1"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right">
+                <Button x:Name="ExportTabButton"
+                        Style="{StaticResource SimpleButton}"
+                        Content="Export"
+                        IsDefault="True"
+                        Click="ExportTabButton_Click">
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Name="miExportTab"
+                                      Header="Export Selected Tab"
+                                      Click="miExportTab_Click" />
+                            <MenuItem Name="miExportAllButFreq"
+                                      Header="Export All"
+                                      Click="miExportAllButFreq_Click" />
+                            <MenuItem Name="miExportAll"
+                                      Header="Export All Incl Freq"
+                                      Click="miExportAll_Click" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+                <Button
+                    x:Name="OkButton"
+                    Style="{StaticResource SimpleButton}"
+                    Content="Exit" IsCancel="True" />
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

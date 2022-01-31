@@ -1,0 +1,7 @@
+X:\BRM12\BatRecordingManager_v8.n-11.2x64\BatRecordingManager_v8.n-11.2x64\BatCallAnalyser\obj\Release\net6.0-windows7.0\BatCallAnalyser.csproj.AssemblyReference.cache
+X:\BRM12\BatRecordingManager_v8.n-11.2x64\BatRecordingManager_v8.n-11.2x64\BatCallAnalyser\obj\Release\net6.0-windows7.0\MainWindow.g.cs
+X:\BRM12\BatRecordingManager_v8.n-11.2x64\BatRecordingManager_v8.n-11.2x64\BatCallAnalyser\obj\Release\net6.0-windows7.0\App.g.cs
+X:\BRM12\BatRecordingManager_v8.n-11.2x64\BatRecordingManager_v8.n-11.2x64\BatCallAnalyser\obj\Release\net6.0-windows7.0\BatCallAnalyser_MarkupCompile.cache
+X:\BRM12\BatRecordingManager_v8.n-11.2x64\BatRecordingManager_v8.n-11.2x64\BatCallAnalyser\obj\Release\net6.0-windows7.0\BatCallAnalyser_MarkupCompile.lref
+X:\BRM12\BatRecordingManager_v8.n-11.2x64\BatRecordingManager_v8.n-11.2x64\BatCallAnalyser\obj\Release\net6.0-windows7.0\BatCallAnalyser.dll
+X:\BRM12\BatRecordingManager_v8.n-11.2x64\BatRecordingManager_v8.n-11.2x64\BatCallAnalyser\obj\Release\net6.0-windows7.0\BatCallAnalyser.pdb

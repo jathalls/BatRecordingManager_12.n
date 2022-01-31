@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Linq.Dynamic.Core;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 namespace BatRecordingManager
 {
@@ -787,7 +788,13 @@ namespace BatRecordingManager
                 matchingRecordings.First().RecordingEndTime = recording.RecordingEndTime;
                 matchingRecordings.First().RecordingStartTime = recording.RecordingStartTime;
             }
-            dc.SubmitChanges();
+            try
+            {
+                dc.SubmitChanges();
+            }catch (Exception ex)
+            {
+                Debug.WriteLine("UpdateRecording() error:- " + ex.Message);
+            }
 
         }
 
@@ -1075,7 +1082,7 @@ namespace BatRecordingManager
         /// <exception cref="NotImplementedException">
         /// </exception>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        internal static string CreateDatabase(string fileName)
+        internal static string CreateDatabase(string fileName, [CallerMemberName] string caller = null, [CallerLineNumber] int linenumber = 0)
         {
             var err = "";
             if (!(fileName.EndsWith(".mdf") && fileName.Contains("BatReferenceDB")))
@@ -1094,8 +1101,8 @@ namespace BatRecordingManager
                                                   @";Integrated Security=False;Connect Timeout=60");
             if (batReferenceDataContext == null) return "Unable to generate a data context for the new database";
             if (batReferenceDataContext.DatabaseExists())
-                batReferenceDataContext.DeleteDatabase();
-            //return ("Database with this name already exists:- " + fileName);
+                
+                return ("Database with this name already exists:- " + fileName);
 
             try
             {
@@ -1114,8 +1121,8 @@ namespace BatRecordingManager
             }
             catch (Exception ex)
             {
-                Tools.ErrorLog(ex.Message);
-                Debug.WriteLine(ex);
+                Tools.ErrorLog($"ERR- {ex.Message} from {caller} at {linenumber}");
+                Debug.WriteLine($"ERR- {ex.Message} from {caller} at {linenumber}");
                 return ex.Message;
             }
 
@@ -1527,14 +1534,20 @@ namespace BatRecordingManager
             return result;
         }
 
-        internal static Bat GetBatByName(string summary)
+        internal static Bat GetBatByName(string text,bool includeNoBats=false)
         {
             var dc = GetFastDataContext();
+            return (GetBatByName(text, dc,includeNoBats));
+        }
+
+        internal static Bat GetBatByName(string summary,BatReferenceDBLinqDataContext dc,bool includeNoBats=false)
+        {
+            
             foreach (var bat in dc.Bats)
             {
                 if (summary.Contains(bat.Name))
                 {
-                    if (!(bat.Name.ToUpper() == "NO BATS"))
+                    if (includeNoBats || !(bat.Name.ToUpper() == "NO BATS"))
                     {
                         return (bat);
                     }
@@ -1885,7 +1898,7 @@ namespace BatRecordingManager
             {
                 if (!File.Exists(workingDatabaseLocation + workingDatabaseFilename))
                 {
-                    Tools.InfoLog("No file at [" + workingDatabaseLocation + workingDatabaseFilename + "]");
+                    Tools.InfoLog("[GetDataContext] No file at [" + workingDatabaseLocation + workingDatabaseFilename + "]");
 
                     workingDatabaseLocation = GetWorkingDatabaseLocation();
                     workingDatabaseFilename = GetWorkingDatabaseName(workingDatabaseLocation);
@@ -1894,22 +1907,22 @@ namespace BatRecordingManager
                 if (!Directory.Exists(workingDatabaseLocation))
                 {
                     workingDatabaseLocation = DBLocation;
-                    Tools.InfoLog("switch to " + workingDatabaseLocation);
+                    Tools.InfoLog("[GetDataContext] switch to " + workingDatabaseLocation);
                     if (!Directory.Exists(workingDatabaseLocation))
                     {
-                        Tools.InfoLog("...and create that directory");
+                        Tools.InfoLog("[GetDataContext] ...and create that directory");
                         Directory.CreateDirectory(workingDatabaseLocation);
                     }
                 }
 
                 if (!File.Exists(workingDatabaseLocation + workingDatabaseFilename))
                 {
-                    Tools.InfoLog("No file at [" + workingDatabaseLocation + workingDatabaseFilename + "]");
+                    Tools.InfoLog("[GetDataContext] No file at [" + workingDatabaseLocation + workingDatabaseFilename + "]");
                     workingDatabaseFilename = DBFileName;
-                    Tools.InfoLog("Try " + DBFileName);
+                    Tools.InfoLog("[GetDataContext] Try " + DBFileName);
                     if (!File.Exists(workingDatabaseFilename))
                     {
-                        Tools.InfoLog("Creating database [" + workingDatabaseLocation + workingDatabaseFilename + "]");
+                        Tools.InfoLog("[GetDataContext] Creating database [" + workingDatabaseLocation + workingDatabaseFilename + "]");
                         CreateDatabase(workingDatabaseLocation + workingDatabaseFilename);
                     }
                 }
@@ -1921,7 +1934,7 @@ namespace BatRecordingManager
             }
             catch (Exception ex)
             {
-                Tools.ErrorLog(ex + "\n" + ex.Message + $"\nConnection string =[{connectionString}]");
+                Tools.ErrorLog(ex + "[GetDataContext] \n" + ex.Message + $"\nConnection string =[{connectionString}]");
             }
             finally
             {
@@ -1940,7 +1953,7 @@ namespace BatRecordingManager
                     versionTableExists = true;
             if (!versionTableExists)
             {
-                Tools.InfoLog("+@+@+@+@  Tables in the database:-");
+                Tools.InfoLog("[GetDataContext] +@+@+@+@  Tables in the database:-");
                 foreach (var table in tables) Tools.InfoLog(table);
                 try
                 {
@@ -1982,9 +1995,9 @@ namespace BatRecordingManager
             catch (Exception ex)
             {
                 Debug.WriteLine("Version Table Does Not Exist:-" + ex.Message);
-                Tools.InfoLog("Version Table does not exist " + ex.Message);
-                Tools.ErrorLog("No version table:- " + batReferenceDataContext.Connection.ConnectionString);
-                Tools.InfoLog(batReferenceDataContext.DatabaseExists() ? "Database exists" : "Database does not exist");
+                Tools.InfoLog("[GetDataContext] Version Table does not exist " + ex.Message);
+                Tools.ErrorLog("[GetDataContext] No version table:- " + batReferenceDataContext.Connection.ConnectionString);
+                Tools.InfoLog("[GetDataContext] "+(batReferenceDataContext.DatabaseExists() ? "Database exists" : "Database does not exist"));
             }
 
             if (!versionTableExists)
@@ -1993,7 +2006,7 @@ namespace BatRecordingManager
                 {
                     CreateVersionTable(batReferenceDataContext);
                     Debug.WriteLine("******* Created Version Table");
-                    Tools.InfoLog("Created new Version Table");
+                    Tools.InfoLog("[GetDataContext] Created new Version Table");
                 }
                 catch (Exception ex)
                 {
@@ -2007,7 +2020,7 @@ namespace BatRecordingManager
                     batReferenceDataContext.Versions.InsertOnSubmit(version);
                     batReferenceDataContext.SubmitChanges();
                     Debug.WriteLine("Added a new version number 5.31");
-                    Tools.InfoLog("added a new Version Number - 5.31");
+                    Tools.InfoLog("[GetDataContext] added a new Version Number - 5.31");
                 }
                 catch (Exception ex)
                 {
@@ -2027,7 +2040,7 @@ namespace BatRecordingManager
                     batReferenceDataContext.Versions.InsertOnSubmit(version);
                     batReferenceDataContext.SubmitChanges();
                     Debug.WriteLine("Added Version entry 5.31 to empty Version Table");
-                    Tools.InfoLog("Added Version 5.31 to empty version Table");
+                    Tools.InfoLog("[GetDataContext] Added Version 5.31 to empty version Table");
                 } // else we have an entry which is not the current version
 
                 try
@@ -2046,7 +2059,7 @@ namespace BatRecordingManager
                     var currentVersion = batReferenceDataContext.Versions.First();
                     currentVersion.Version1 = DbVersionDec;
                     batReferenceDataContext.SubmitChanges();
-                    Tools.InfoLog("Set current version to " + DbVersionDec);
+                    Tools.InfoLog("[GetDataContext] Set current version to " + DbVersionDec);
                 }
                 catch (Exception ex)
                 {
@@ -2058,6 +2071,11 @@ namespace BatRecordingManager
 
             _persistentbatReferenceDataContext = null;
             _isDataContextUpToDate = true;
+
+            if (!batReferenceDataContext.Bats.Any())
+            {
+                UpdateReferenceData(workingDatabaseLocation, batReferenceDataContext);
+            }
             return batReferenceDataContext;
         }
 
@@ -3201,10 +3219,13 @@ namespace BatRecordingManager
                 var recordings = from rec in dc.Recordings
                                  where rec.RecordingName.ToUpper().Contains(filename.ToUpper())
                                  select rec;
-                
+
+                if (recordings != null && recordings.Any())
+                {
                     foreach (var seg in recordings?.FirstOrDefault().LabelledSegments ?? new EntitySet<LabelledSegment>())
                         if ((seg.Duration() ?? new TimeSpan()).Ticks > 0L)
                             result.Add(seg);
+                }
             }
 
             return result;
@@ -3481,10 +3502,22 @@ namespace BatRecordingManager
         {
             var workingDatabaseName = "";
 
-            if (!File.Exists(App.dbFileLocation + App.dbFileName))
+            if (Directory.Exists(dbLocation))
             {
-                InitializeDatabase();
+                if (File.Exists(Path.Combine(dbLocation, App.dbFileName))) return (App.dbFileName);
+                var files = Directory.EnumerateFiles(dbLocation, "*.mdf");
+                if (files == null || !files.Any())
+                {
+                    dbLocation = App.dbFileLocation;
+                    files = Directory.EnumerateFiles(dbLocation, "*.mdf");
+                    if (files == null || !files.Any())
+                    {
+                        return (App.dbFileName);
+                    }
+                }
+                return (files.First());
             }
+
             workingDatabaseName = App.dbFileName;
 
             return workingDatabaseName;
@@ -3516,7 +3549,7 @@ namespace BatRecordingManager
         ///     If the database already exists, then if there is an editable reference file it is used to update the database
         ///     and is then renamed as .bak to prevent re-use.
         /// </summary>
-        internal static void InitializeDatabase()
+        internal static int InitializeDatabase()
         {
             try
             {
@@ -3534,47 +3567,27 @@ namespace BatRecordingManager
                         Debug.WriteLine(ex);
                         Tools.ErrorLog(ex.Message);
                     }
-
-                    //BatReferenceDBLinqDataContext batReferenceDataContext = DBAccess.GetDataContext();
-                    if (!File.Exists(workingDatabaseLocation + "EditableBatReferenceXMLFile.xml") &&
-                        File.Exists(workingDatabaseLocation + "BatReferenceXMLFile.xml"))
-                    {
-                        File.Move(workingDatabaseLocation + "BatReferenceXMLFile.xml",
-                            workingDatabaseLocation + "EditableBatReferenceXMLFile.xml");
-
-                        UpdateReferenceData(workingDatabaseLocation);
-                    }
-                    else
-                    {
-                        if (File.Exists(@".\BatReferenceXMLFile.xml"))
-                        {
-                            File.Copy(@".\BatReferenceXMLFile.xml", workingDatabaseLocation + "EditableBatReferenceXMLFile.xml");
-                            UpdateReferenceData(workingDatabaseLocation);
-                        }
-                    }
-                }
-                else
-                {
-                    UpdateReferenceData(workingDatabaseLocation);
                 }
 
-                if (File.Exists(@".\BatReferenceXMLFileUpdate.xml"))
+                var dc = GetDataContext();
+
+                if (dc == null)
                 {
-                    CopyXmlDataToDatabase(@".\BatReferenceXMLFileUpdate.xml");
-                    if (File.Exists(@".\BatReferenceXMLFileLatest.xml"))
-                    {
-                        File.Delete(@".\BatReferenceXMLFileLatest.xml");
-                    }
-                    File.Move(@".\BatReferenceXMLFileUpdate.xml", @".\BatReferenceXMLFileLatest.xml");
+                    Debug.WriteLine("FATALERROR *** Unable to create or access the database - Try re-installing SqlLocal2019.msi!!");
+                    Tools.ErrorLog("FATALERROR *** Unable to create or access the database - Try re-installing SqlLocal2019.msi!!");
+                    return -1;
                 }
 
                 //DBAccess.ResequenceBats();
+                UpdateReferenceData(workingDatabaseLocation,dc);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
                 Tools.ErrorLog(ex.Message);
+                return -1;
             }
+            return (0);
         }
 
         /// <summary>
@@ -3600,7 +3613,7 @@ namespace BatRecordingManager
                 */
                 //BatReferenceDBLinqDataContext batReferenceDataContext = DBAccess.GetDataContext();
 
-                UpdateReferenceData(DBLocation);
+                UpdateReferenceData(DBLocation,dc);
 
                 //DBAccess.ResequenceBats();
             }
@@ -3699,7 +3712,7 @@ namespace BatRecordingManager
                 else
                 {
                     App.ResetDatabase();
-                    InitializeDatabase();
+                    
                 }
                 InitializeDatabase();
             }
@@ -4348,6 +4361,40 @@ namespace BatRecordingManager
             }
         }
 
+        public static BatReferenceDBLinqDataContext OpenDatabase(string location,string name)
+        {
+            string path = null;
+            if(string.IsNullOrWhiteSpace(location) || !Directory.Exists(location))
+            {
+                location = DBLocation;
+                
+            }
+
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                name = DBFileName;
+                
+
+            }
+            if (!Directory.Exists(location))
+            {
+                Directory.CreateDirectory(location);
+            }
+            path = Path.Combine(location, name);
+            if (!File.Exists(path))
+            {
+                string source = Path.Combine(@".\", name);
+                File.Copy(source, path);
+            }
+            SetDatabase(path);
+
+            var dc = GetDataContext();
+
+            return (dc);
+            
+
+        }
+
         private static void AddBatRecordingTable(BatReferenceDBLinqDataContext batReferenceDataContext)
         {
             try
@@ -4488,11 +4535,19 @@ namespace BatRecordingManager
             Bat insertedBat = null;
             try
             {
-                newBat.Name = bat.Attribute("Name").Value;
+                newBat.Name = bat.Descendants("BatCommonName").FirstOrDefault().Value;
                 newBat.Batgenus = bat.Descendants("BatGenus").FirstOrDefault().Value;
                 newBat.BatSpecies = bat.Descendants("BatSpecies").FirstOrDefault().Value;
+
+                if (bat.Descendants("BatNotes").Any())
+                {
+
+                    newBat.Notes = bat.Descendants("BatNotes").FirstOrDefault().Value;
+                }
+
+                
                 newBat.SortIndex = 2000;
-                newBat.Notes = "";
+                //newBat.Notes = "";
                 var parameters = "";
 
                 var newTags = bat.Descendants("BatTag");
@@ -4510,17 +4565,58 @@ namespace BatRecordingManager
                 if (!newCommonNames.IsNullOrEmpty()) newBat.Name = newCommonNames.First().Value;
                 if (dc == null) dc = GetDataContext();
 
-                var existingBat = GetMatchingBat(newBat);
+                Bat existingBat = null;
 
-                MergeBat(newBat, dc, out insertedBat);
-                if (insertedBat == null)
+                //var existingBat = GetMatchingBat(newBat,dc);
+                //var existingBat = GetBatByName(newBat.Name,dc,true);
+                var matchingBats = from bt in dc.Bats
+                                   where bt.Name == newBat.Name ||
+                                       bt.Batgenus == newBat.Batgenus && bt.BatSpecies == newBat.BatSpecies
+                                   select bt;
+                if(matchingBats!=null && matchingBats.Any())
                 {
-                    Tools.ErrorLog("Failed to insert/Merge Bat from XML File");
-                    return insertedBat;
+                    existingBat = matchingBats.FirstOrDefault();
                 }
 
+            bool newbat = false;
                 if (existingBat == null)
                 {
+                    existingBat = new Bat();
+                    newbat = true;
+                }
+
+                //MergeBat(newBat, dc, out insertedBat);
+                MergeTags(existingBat, newBat, dc);
+                existingBat.Notes =newBat.Notes;
+                existingBat.Name = newBat.Name;
+                existingBat.Batgenus = newBat.Batgenus;
+                existingBat.BatSpecies = newBat.BatSpecies;
+                existingBat.SortIndex = newBat.SortIndex;
+                if (newbat) dc.Bats.InsertOnSubmit(existingBat);
+                dc.SubmitChanges();
+
+                existingBat=dc.Bats.Where(bt=>bt.Id==existingBat.Id).FirstOrDefault();
+                
+
+                if (existingBat != null)
+                {
+                    var batcalls = from bc in dc.BatCalls
+                                   where bc.BatID == existingBat.Id
+                                   select bc;
+                    if (batcalls != null)
+                    {
+                        var calls = dc.Calls.Where(call => batcalls.Any(batcall => batcall.CallID == call.Id));
+
+                        foreach (var call in calls ?? Enumerable.Empty<Call>().AsQueryable())
+                            if (call.CallPictures != null)
+                                DeleteImagesForCall(call, dc);
+
+                        dc.BatCalls.DeleteAllOnSubmit(batcalls);
+
+                        dc.Calls.DeleteAllOnSubmit(calls);
+                    }
+                    dc.SubmitChanges();
+
                     var callDefinitions = bat.Descendants("Call");
                     
                         foreach (var call in callDefinitions??Enumerable.Empty<XElement>())
@@ -4529,7 +4625,7 @@ namespace BatRecordingManager
 
                             dc.Calls.InsertOnSubmit(dbCall);
                             dc.SubmitChanges();
-                            var bc = new BatCall { BatID = insertedBat.Id, CallID = dbCall.Id };
+                            var bc = new BatCall { BatID = (existingBat?.Id)??-2, CallID = (dbCall?.Id)??-2 };
                             dc.BatCalls.InsertOnSubmit(bc);
                             dc.SubmitChanges();
                         }
@@ -4537,7 +4633,7 @@ namespace BatRecordingManager
             }
             catch (Exception ex)
             {
-                Tools.ErrorLog(ex.Message);
+                Tools.ErrorLog($"{ex.Source??"BRM"}.{(ex.TargetSite?.ToString())??"?"} - {ex.Message} - {ex.Data.ToString()}");
             }
 
             return insertedBat;
@@ -4554,6 +4650,7 @@ namespace BatRecordingManager
         {
             try
             {
+                Debug.WriteLine($"Merge {xmlFile} into database");
                 var xmlBats = XElement.Load(xmlFile).Descendants("Bat");
                 if (xmlBats != null)
                     foreach (var bat in xmlBats)
@@ -4573,7 +4670,7 @@ namespace BatRecordingManager
                 Debug.WriteLine("Error reading xml file " + xmlFile + ":- " + ex.Message);
             }
 
-            //short i = 0;
+            
         }
 
         /// <summary>
@@ -6704,29 +6801,68 @@ ADD [AutoID] NVARCHAR (50) NULL;"
                     }
         }
 
-        private static void UpdateReferenceData(string workingDatabaseLocation)
+        private static void UpdateReferenceData(string workingDatabaseLocation,BatReferenceDBLinqDataContext dc)
         {
-            var referenceFile = workingDatabaseLocation + "EditableBatReferenceXMLFile.xml";
+            Debug.WriteLine("UpdateReferenceData()");
+            String referenceFile = null;
+            if (!dc.Bats.Any()) {
+                try
+                {
+                    
+                    string temp = Path.Combine(workingDatabaseLocation, "BatReferenceXMLFile.xml");
+                    if (File.Exists(temp)) referenceFile = temp;
+                    temp = Path.Combine(workingDatabaseLocation, "EditableBatReferenceXMLFile.xml");
+                    if (File.Exists(temp)) referenceFile = temp;
+                    Tools.InfoLog($"Database has no bats, so initilising with reference data from {temp}");
+                    if (referenceFile != null)
+                    {
+                        Debug.WriteLine($"Import {referenceFile}");
+                        CopyXmlDataToDatabase(referenceFile);
+                        temp = referenceFile + ".bak";
+                        if (File.Exists(temp)) File.Delete(temp);
+                        File.Move(referenceFile, temp);
+                    }
+                }catch(Exception ex)
+                {
+                    Debug.WriteLine("Unable to fill empty database reference:- " + ex.Message);
+                    Tools.ErrorLog("Unable to fill empty database reference:- " + ex.Message);
+                }
+            }
+            referenceFile = null;
             try
             {
-                if (!File.Exists(referenceFile))
+                
+                Tools.InfoLog("Updating the bat reference data");
+                string temp = Path.Combine(workingDatabaseLocation, "BatReferenceXMLFileUpdate.xml");
+                if (File.Exists(temp)) referenceFile = temp;
+                else
                 {
-                    referenceFile = workingDatabaseLocation + "BatReferenceXMLFile.xml";
-                    if (!File.Exists(referenceFile)) referenceFile = @".\BatReferenceXMLFile.xaml";
+                    string temp2 = Path.Combine(@".\", "BatReferenceXMLFileUpdate.xml");
+                    if (File.Exists(temp2))
+                    {
+                        File.Copy(temp2, temp);
+                        if (!File.Exists(temp)) return;
+                    }
                 }
-
-                if (File.Exists(referenceFile))
-                {
-                    CopyXmlDataToDatabase(referenceFile);
-                    if (File.Exists(referenceFile + ".bak")) File.Delete(referenceFile + ".bak");
-                    File.Move(referenceFile, referenceFile + ".bak");
+                if (referenceFile != null) {
+                    Debug.WriteLine($"Import Update {referenceFile}");
+                    CopyXmlDataToDatabase(referenceFile, dc);
+                    temp = referenceFile + ".bak";
+                    if (File.Exists(temp)) File.Delete(temp);
+                    File.Move(referenceFile, temp);
                 }
-            }
-            catch (Exception ex)
+            }catch(Exception ex)
             {
-                Tools.ErrorLog("UpdateReferenceData Error from:- ( " + referenceFile + ") " + ex.Message);
+                Debug.WriteLine("Unable to update database reference:- " + ex.Message);
+                Tools.ErrorLog("Unable to update database reference:- " + ex.Message);
             }
+
+
+
+            
         }
+
+        
 
         /// <summary>
         ///     Given an existingSegment with possibly updated contents, updates the segment/call links and

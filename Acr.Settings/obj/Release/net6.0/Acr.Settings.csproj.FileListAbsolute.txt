@@ -1,0 +1,11 @@
+C:\Users\justi\source\repos\Acr.Settings\bin\Release\net6.0\Acr.Settings.deps.json
+C:\Users\justi\source\repos\Acr.Settings\bin\Release\net6.0\Acr.Settings.dll
+C:\Users\justi\source\repos\Acr.Settings\bin\Release\net6.0\ref\Acr.Settings.dll
+C:\Users\justi\source\repos\Acr.Settings\bin\Release\net6.0\Acr.Settings.pdb
+C:\Users\justi\source\repos\Acr.Settings\obj\Release\net6.0\Acr.Settings.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\justi\source\repos\Acr.Settings\obj\Release\net6.0\Acr.Settings.AssemblyInfoInputs.cache
+C:\Users\justi\source\repos\Acr.Settings\obj\Release\net6.0\Acr.Settings.AssemblyInfo.cs
+C:\Users\justi\source\repos\Acr.Settings\obj\Release\net6.0\Acr.Settings.csproj.CoreCompileInputs.cache
+C:\Users\justi\source\repos\Acr.Settings\obj\Release\net6.0\Acr.Settings.dll
+C:\Users\justi\source\repos\Acr.Settings\obj\Release\net6.0\ref\Acr.Settings.dll
+C:\Users\justi\source\repos\Acr.Settings\obj\Release\net6.0\Acr.Settings.pdb

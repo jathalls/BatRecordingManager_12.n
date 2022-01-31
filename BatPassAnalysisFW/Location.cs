@@ -1,0 +1,6 @@
+﻿namespace BatPassAnalysisFW
+{
+    class Location
+    {
+    }
+}
