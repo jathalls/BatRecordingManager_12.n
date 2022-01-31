@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11.25, 8.5" name="PulseTrainAnalysisDBML">
+  <DataContextMoniker Name="/PulseTrainAnalysisDBMLDataContext" />
+  <nestedChildShapes>
+    <classShape Id="580bab3c-38e1-4661-a7c1-039d63ff9a24" absoluteBounds="6.25, 2.125, 2, 2.155499674479167">
+      <DataClassMoniker Name="/PulseTrainAnalysisDBMLDataContext/PTAPass" />
+      <nestedChildShapes>
+        <elementListCompartment Id="756666ec-5426-4dd9-a19c-7d85f49f8cc2" absoluteBounds="6.265, 2.585, 1.9700000000000002, 1.5954996744791665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="d8819ccb-9ec8-4888-a7e1-05abce84a929" absoluteBounds="3.5, 2.25, 2, 1.9631982421874996">
+      <DataClassMoniker Name="/PulseTrainAnalysisDBMLDataContext/PTASegment" />
+      <nestedChildShapes>
+        <elementListCompartment Id="9fe5d2c0-d3c2-4656-b4ad-e977aa70bcc4" absoluteBounds="3.515, 2.71, 1.9700000000000002, 1.4031982421875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="f3b516d2-7085-4de9-9546-377a753fa96e" absoluteBounds="9, 1, 2, 4.2708154296875">
+      <DataClassMoniker Name="/PulseTrainAnalysisDBMLDataContext/PTAPulse" />
+      <nestedChildShapes>
+        <elementListCompartment Id="a5e7b390-7d69-4b80-a819-63057f4b7600" absoluteBounds="9.015, 1.46, 1.9700000000000002, 3.7108154296875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="75cd2538-2698-4603-9717-9c64ded455b9" absoluteBounds="0.75, 2.25, 2, 1.7708968098958335">
+      <DataClassMoniker Name="/PulseTrainAnalysisDBMLDataContext/PTARecording" />
+      <nestedChildShapes>
+        <elementListCompartment Id="7855dbcf-a8e7-4123-ad4b-a25592dc5089" absoluteBounds="0.765, 2.71, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(5.5 : 3.23159912109375); (6.25 : 3.23159912109375)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/PulseTrainAnalysisDBMLDataContext/PTASegment/PTASegment_PTAPass" />
+      <nodes>
+        <classShapeMoniker Id="d8819ccb-9ec8-4888-a7e1-05abce84a929" />
+        <classShapeMoniker Id="580bab3c-38e1-4661-a7c1-039d63ff9a24" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(8.25 : 3.20274983723958); (9 : 3.20274983723958)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/PulseTrainAnalysisDBMLDataContext/PTAPass/PTAPass_PTAPulse" />
+      <nodes>
+        <classShapeMoniker Id="580bab3c-38e1-4661-a7c1-039d63ff9a24" />
+        <classShapeMoniker Id="f3b516d2-7085-4de9-9546-377a753fa96e" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 3.13544840494792); (3.5 : 3.13544840494792)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/PulseTrainAnalysisDBMLDataContext/PTARecording/PTARecording_PTASegment" />
+      <nodes>
+        <classShapeMoniker Id="75cd2538-2698-4603-9717-9c64ded455b9" />
+        <classShapeMoniker Id="d8819ccb-9ec8-4888-a7e1-05abce84a929" />
+      </nodes>
+    </associationConnector>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

@@ -1,0 +1,18 @@
+﻿<wpf:Application
+    xmlns:wpf="http://schemas.microsoft.com/netfx/2009/xaml/presentation"    
+    x:Class="BatRecordingManager.App"
+    
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:wpf1="http://schemas.microsoft.com/netfx/2007/xaml/presentation"
+    StartupUri="MainWindow.xaml">
+    <wpf:Application.Resources>
+        <wpf:ResourceDictionary>
+            <wpf1:ResourceDictionary.MergedDictionaries>
+                <wpf:ResourceDictionary Source="Simple Styles.xaml" />
+                <wpf:ResourceDictionary Source="BatStyleDictionary.xaml" />
+                <wpf:ResourceDictionary Source="MapResourceDictionary.xaml" />
+            </wpf1:ResourceDictionary.MergedDictionaries>
+        </wpf:ResourceDictionary>
+    </wpf:Application.Resources>
+    
+</wpf:Application>

@@ -1,0 +1,33 @@
+﻿RecordingsDetailListControl.XAML
+	miAnalyseSegment_Click
+		deepAnalyser=new DeepAnalysis()
+		deepAnalyser.SaveClicked=>DeepAnalyser_SaveClicked() //does nothing
+		deepAnalyser.AnalyseSegment(selection,mode)
+			GetFileName()
+			BiQuadFilter.HighPassFilter(15kHz)
+			AnalyseData(data,byZeroCrossing)
+				GetSpectrum(data)
+			ParameterizeData(data,mode)
+				param=new Parametrization(data,sampleRate,mode)
+				param.SaveClicked+=Param_saveClicked(call)
+					DBAccess.AppendCallDetailsToSegment(call,segment)
+					OnSaveClicked() //does nothing
+				param.CalculateParameters(spectra,FFTSize,FFTOverlap)
+					getEnvelope(data)
+						Math.Abs()
+						LowPassFilter(4kHz)
+					getCalls()
+						getPeaks(envelopeData)
+						GetFrequencyParams()
+						call=getCallFromAllData()
+						call.setToSettings()
+						analysisWindow=new CallAnalysisWindow()
+						analysisWindow.Show()
+						displayableData=getDisplayableData()
+						analysisWindow.SetDisplayableCalldata(displayableData)
+						analysisWindow.AnalysisChartGrid.saveClicked+=AnalysisChartGrid_saveClicked()
+							OnSaveClicked()
+		bmps=deepAnalyser.GetImage()
+		image=newSegmentSonagrams().GenerateForSegment(selection,param)
+		ComparisonHost.Instance.AddImage(image);
+		UpdateRecordingsList(rec)
