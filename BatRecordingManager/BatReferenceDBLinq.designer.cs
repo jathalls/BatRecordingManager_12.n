@@ -23,6 +23,7 @@ namespace BatRecordingManager
 	using System;
     using System.Data.Linq;
     using System.Data.Linq.Mapping;
+    using Newtonsoft.Json;
 
     [global::System.Data.Linq.Mapping.DatabaseAttribute(Name="BatReferenceDBv5.31")]
 	public partial class BatReferenceDBLinqDataContext : System.Data.Linq.DataContext
@@ -1688,7 +1689,8 @@ namespace BatRecordingManager
 				}
 			}
 		}
-		
+
+        [JsonIgnore]
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="RecordingSession_BatSessionLink", Storage="_RecordingSession", ThisKey="SessionID", OtherKey="Id", IsForeignKey=true)]
 		public RecordingSession RecordingSession
 		{

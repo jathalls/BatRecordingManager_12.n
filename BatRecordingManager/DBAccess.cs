@@ -16,6 +16,7 @@
 
 
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,6 +31,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace BatRecordingManager
 {
@@ -772,27 +774,68 @@ namespace BatRecordingManager
         /// <param name="recording"></param>
         internal static void UpdateRecording(Recording recording)
         {
+            try
+            {
+                if (recording.Id >= 0)
+                {
+                    var dcf = GetFastDataContext();
+                    dcf.SubmitChanges();
+                    return;
+                }
+            }catch(Exception ex)
+            {
+                Tools.ErrorLog($"for recording id={recording.Id}:- {ex.Message}, at stack:-\n{ex.StackTrace}");
+            }
+            
+
+
+
+            bool changed = false;
             var dc = GetDataContext();
-            var matchingRecordings = from rec in dc.Recordings
+            var matchingRecording = (from rec in dc.Recordings
                                      where rec.Id == recording.Id
-                                     select (rec);
-            if (matchingRecordings == null || !matchingRecordings.Any())
+                                     select (rec))?.First();
+            if (matchingRecording == null)
             {
                 dc.Recordings.InsertOnSubmit(recording);
+                changed = true;
             }
             else
             {
-                matchingRecordings.First().RecordingDate = recording.RecordingDate;
-                matchingRecordings.First().RecordingEndTime = recording.RecordingEndTime;
-                matchingRecordings.First().RecordingStartTime = recording.RecordingStartTime;
+                if(matchingRecording.RecordingDate != recording.RecordingDate)
+                {
+                    matchingRecording.RecordingDate = recording.RecordingDate;
+                    changed = true;
+                };
+                if (matchingRecording.RecordingEndTime != recording.RecordingEndTime)
+                {
+                    matchingRecording.RecordingEndTime = recording.RecordingEndTime;
+                    changed = true;
+                }
+                if (matchingRecording.RecordingStartTime != recording.RecordingStartTime)
+                {
+                    matchingRecording.RecordingStartTime = recording.RecordingStartTime;
+                    changed = true;
+                }
+                if (matchingRecording.RecordingName != recording.RecordingName)
+                {
+                    matchingRecording.RecordingName = recording.RecordingName;
+                    changed = true;
+                }
             }
             try
             {
-                dc.SubmitChanges();
+                if(changed)
+                    dc.SubmitChanges();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("UpdateRecording() error:- " + ex.Message);
+                Debug.WriteLine("       UpdateRecording() error:- " + ex.Message);
+                Tools.ErrorLog($@"Update Recording Error:-
+found  with ID={recording.Id}
+update {recording.RecordingName} on {recording.RecordingDate} at {recording.RecordingStartTime}-{recording.RecordingEndTime}
+matched {matchingRecording?.RecordingName}
+");
             }
 
         }
@@ -1026,6 +1069,94 @@ namespace BatRecordingManager
             //DBAccess.ResequenceBats();
             var index = newTag.Id;
             return index;
+        }
+
+        /// <summary>
+        /// Re-creates a session in the database from a JSON file specified.  If the session (identified by
+        /// its Tag) already exists the tag will be modified by the addion of a numerical addition.
+        /// </summary>
+        /// <param name="fileToRestore"></param>
+        internal static void DeSerializeSession(string fileToRestore)
+        {
+            if (!File.Exists(fileToRestore)) return;
+            JsonTextReader jsonReader = new JsonTextReader(new StreamReader(fileToRestore));
+            var jsonSerializer = new JsonSerializer();
+            RecordingSession returnSession = jsonSerializer.Deserialize<RecordingSession>(jsonReader);
+            DBAccess.InsertRecordingSession(returnSession);
+        }
+
+        /// <summary>
+        /// Writes the contents of a RecordingSession to a JSON file.  Linking tables are ignored to
+        /// prevent recusion and inclusion of all the database contents.
+        /// </summary>
+        /// <param name="recordingSession"></param>
+        /// <param name="fileName"></param>
+        internal static void SerializeSession(RecordingSession recordingSession, string fileName)
+        {
+            
+            var dc = GetDataContext();
+            var shortSession = (from sess in dc.RecordingSessions
+                                where sess.Id == recordingSession.Id
+                                select sess).Single();
+
+            shortSession.BatSessionLinks = new EntitySet<BatSessionLink>();
+            
+            
+            foreach(var rec in shortSession.Recordings)
+            {
+                rec.BatRecordingLinks = new EntitySet<BatRecordingLink>();
+                rec.RecordingSessionId = -1;
+                rec.RecordingSession = null;
+                
+                foreach(var seg in rec.LabelledSegments)
+                {
+                    seg.RecordingID = -1;
+                    seg.BatSegmentLinks = new EntitySet<BatSegmentLink>();
+                    seg.SegmentCalls = new EntitySet<SegmentCall>();
+                    //seg.SegmentDatas = new EntitySet<SegmentData>();
+                    
+                }
+                
+            }
+               
+            if(shortSession!=null )
+            {
+                if (String.IsNullOrWhiteSpace(fileName))
+                {
+                    fileName = @$"C:\BRMBackup\{shortSession.SessionTag}.json";
+                }
+                var path = Path.GetDirectoryName(fileName);
+                var file = Path.GetFileName(fileName);
+                if (string.IsNullOrWhiteSpace(file)) file = shortSession.SessionTag + ".json";
+                if (!file.EndsWith(".json")) Path.ChangeExtension(file, "json");
+                if (!Directory.Exists(path))
+                {
+                    path = @"C:\BRMBackup";
+                }
+                fileName = Path.Combine(path, file);
+
+                if (File.Exists(fileName))
+                {
+                    string bakFile = Path.ChangeExtension(fileName, "bak");
+                    if (!File.Exists(bakFile)) File.Delete(bakFile);
+                    File.Copy(fileName, bakFile);
+                }
+                TextWriter jsonWriter = new StreamWriter(fileName);
+                var jsonSerializer = new JsonSerializer();
+                jsonSerializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                jsonSerializer.Formatting = Formatting.Indented;
+
+                jsonSerializer.Serialize(jsonWriter, shortSession);
+                jsonWriter.Flush();
+                jsonWriter.Close();
+
+                
+            }
+
+            //DeSerializeSession(@"C:\BRMTestData\Session.json");
+
+
+
         }
 
         /// <summary>
@@ -3200,8 +3331,8 @@ namespace BatRecordingManager
                                  select link.LabelledSegment;
 
             foreach (var seg in linkedSegments ?? Enumerable.Empty<LabelledSegment>().AsQueryable())
-                if ((seg.Duration() ?? new TimeSpan()).Ticks == 0L)
-                    foreach (var segment in seg.Recording.LabelledSegments)
+                if (seg!=null && (seg.Duration() ?? new TimeSpan()).Ticks == 0L)
+                    foreach (var segment in (seg.Recording?.LabelledSegments)??new EntitySet<LabelledSegment>())
                         result.Add((segment.Duration() ?? new TimeSpan()).Ticks > 0L ? segment : seg);
             if (result.Count > 0) return result;
             // if we get here we could not find any segments associated with the image, so try looking for
@@ -3222,7 +3353,7 @@ namespace BatRecordingManager
                 if (recordings != null && recordings.Any())
                 {
                     foreach (var seg in recordings?.FirstOrDefault().LabelledSegments ?? new EntitySet<LabelledSegment>())
-                        if ((seg.Duration() ?? new TimeSpan()).Ticks > 0L)
+                        if (seg!=null && (seg.Duration() ?? new TimeSpan()).Ticks > 0L)
                             result.Add(seg);
                 }
             }
@@ -3948,6 +4079,96 @@ namespace BatRecordingManager
         }
 
         /// <summary>
+        /// Given an instance of a Recording session, with sublist of Recordings and those with sublists of
+        /// LabelledSegments, but with no other links, in conformance with the format returned by a JSON
+        /// export.  If the seeion tag for the session to be inserted already exists in the database, then
+        /// a numerical suffix is appended sufficient to make the tag unique.
+        /// </summary>
+        /// <param name="sessionToInsert"></param>
+        /// <returns>A string which is empty if the operation was successful, or contains an informative
+        /// message if there was a problem.</returns>
+        internal static string InsertRecordingSession(RecordingSession sessionToInsert)
+        {
+            string result = "";
+            sessionToInsert.Id = -1;
+            var dc = GetDataContext(); // return a new uncluttered DataContext fort the current database
+            bool sessionExists = true;
+            int index = 1;
+            string newTag = sessionToInsert.SessionTag;
+            while (sessionExists)
+            {
+
+                sessionExists=!(from sess in dc.RecordingSessions
+                  where sess.SessionTag == newTag
+                  select sess).IsNullOrEmpty();
+                if (sessionExists)
+                {
+                    newTag = sessionToInsert.SessionTag + $"_{index++}";
+                }
+                if (index > 100)
+                {
+                    return ("ERROR - too many identical session tags");
+                }
+            }
+
+            List<Recording> recordingsToAdd =  sessionToInsert.Recordings.ToList();
+            sessionToInsert.SessionTag = newTag;
+            sessionToInsert.Recordings = new EntitySet<Recording>();
+            
+
+            dc.RecordingSessions.InsertOnSubmit(sessionToInsert);
+            dc.SubmitChanges();
+
+
+            if (recordingsToAdd != null && recordingsToAdd.Count > 0)
+            {
+                for (int i = 0; i < recordingsToAdd.Count; i++)
+                {
+                    recordingsToAdd[i].RecordingSession = sessionToInsert;
+
+
+                    DBAccess.InsertRecording(recordingsToAdd[i], sessionToInsert.Id, dc);
+                }
+            }
+            
+
+
+            return (result);
+        }
+
+        /// <summary>
+        /// Inserts an instance of a recording to the database, linked to the RecordingSession
+        /// whose ID is supplied.  The recording may contain a list of Labelled segments, but no other
+        /// relational links are included, in accordance with the format returned from a JSON export.
+        /// </summary>
+        /// <param name="recording"></param>
+        /// <param name="id"></param>
+        internal static void InsertRecording(Recording recording, int id,BatReferenceDBLinqDataContext dc=null)
+        {
+            if (dc == null) dc = GetDataContext();
+            recording.Id = -1;
+            List<LabelledSegment> segmentsToAdd = recording.LabelledSegments.ToList();
+            recording.LabelledSegments?.Clear();
+
+            if(segmentsToAdd==null) segmentsToAdd = new List<LabelledSegment>();
+
+            recording.RecordingSessionId = id;
+            dc.Recordings.InsertOnSubmit(recording);
+            dc.SubmitChanges();
+            if (segmentsToAdd != null && segmentsToAdd.Count > 0)
+            {
+                for (int i = 0; i < segmentsToAdd.Count; i++)
+                {
+                    segmentsToAdd[i].Recording = recording;
+
+                    recording.AddLabelledSegment(segmentsToAdd[i], dc);
+                }
+            }
+            //recording.UpdateLabelledSegments(new ObservableCollection<ObservableCollection<StoredImage>>(), dc);
+
+        }
+
+        /// <summary>
         ///     Updates a single labelledSegment which already exists in the database.
         ///     The segment is identified by the ID in the passed parameter.
         ///     NB does not update BatSegmentLinks
@@ -4012,12 +4233,13 @@ namespace BatRecordingManager
         /// <returns></returns>
         internal static Recording UpdateRecording(Recording recording,
             ObservableCollection<SegmentAndBatList> listOfSegmentAndBatLists,
-            ObservableCollection<ObservableCollection<StoredImage>> listOfSegmentImageLists)
+            ObservableCollection<ObservableCollection<StoredImage>> listOfSegmentImageLists,
+            BatReferenceDBLinqDataContext dc=null)
         {
 
 
             Recording existingRecording = null;
-            var dc = GetFastDataContext();
+            if(dc==null) dc = GetFastDataContext();
 
 
             try
@@ -4124,14 +4346,14 @@ namespace BatRecordingManager
         /// <summary>
         ///     Updates the recording session if it already exists in the database or adds it to the database
         /// </summary>
-        /// <param name="sessionForFolder">
+        /// <param name="sessionToUpdate">
         ///     The session for folder.
         /// </param>
         /// <exception cref="System.NotImplementedException">
         /// </exception>
-        internal static void UpdateRecordingSession(RecordingSession sessionForFolder, BatReferenceDBLinqDataContext dc = null)
+        internal static void UpdateRecordingSession(RecordingSession sessionToUpdate, BatReferenceDBLinqDataContext dc = null)
         {
-            if (sessionForFolder == null)
+            if (sessionToUpdate == null)
             {
                 Tools.ErrorLog("Attempt to update a null session");
                 return;
@@ -4143,39 +4365,39 @@ namespace BatRecordingManager
                 RecordingSession existingSession = null;
 
                 var existingSessions = from sess in dc.RecordingSessions
-                                       where sess.Id == sessionForFolder.Id || sess.SessionTag == sessionForFolder.SessionTag
+                                       where sess.Id == sessionToUpdate.Id || sess.SessionTag == sessionToUpdate.SessionTag
                                        select sess;
                 if (!existingSessions.IsNullOrEmpty()) existingSession = existingSessions.First();
 
                 if (existingSession == null)
                 {
-                    sessionForFolder.SessionTag = sessionForFolder.SessionTag.Truncate(120);
-                    sessionForFolder.Equipment = sessionForFolder.Equipment.Truncate(120);
-                    sessionForFolder.Microphone = sessionForFolder.Microphone.Truncate(120);
-                    sessionForFolder.Weather = sessionForFolder.Weather.Truncate(120);
-                    sessionForFolder.Location = sessionForFolder.Location.Truncate(120);
-                    sessionForFolder.Operator = sessionForFolder.Operator.Truncate(120);
-                    NormalizeSessionDateTimes(ref sessionForFolder);
-                    dc.RecordingSessions.InsertOnSubmit(sessionForFolder);
+                    sessionToUpdate.SessionTag = sessionToUpdate.SessionTag.Truncate(120);
+                    sessionToUpdate.Equipment = sessionToUpdate.Equipment.Truncate(120);
+                    sessionToUpdate.Microphone = sessionToUpdate.Microphone.Truncate(120);
+                    sessionToUpdate.Weather = sessionToUpdate.Weather.Truncate(120);
+                    sessionToUpdate.Location = sessionToUpdate.Location.Truncate(120);
+                    sessionToUpdate.Operator = sessionToUpdate.Operator.Truncate(120);
+                    NormalizeSessionDateTimes(ref sessionToUpdate);
+                    dc.RecordingSessions.InsertOnSubmit(sessionToUpdate);
                 }
                 else
                 {
-                    existingSession.SessionTag = sessionForFolder.SessionTag.Truncate(120);
-                    existingSession.Equipment = sessionForFolder.Equipment.Truncate(120);
-                    existingSession.Microphone = sessionForFolder.Microphone.Truncate(120);
-                    existingSession.Weather = sessionForFolder.Weather.Truncate(120);
-                    existingSession.Location = sessionForFolder.Location.Truncate(120);
-                    existingSession.SessionDate = sessionForFolder.SessionDate;
-                    existingSession.SessionStartTime = sessionForFolder.SessionStartTime;
-                    existingSession.SessionEndTime = sessionForFolder.SessionEndTime;
-                    existingSession.EndDate = sessionForFolder.EndDate;
-                    existingSession.Sunset = sessionForFolder.Sunset;
-                    existingSession.SessionNotes = sessionForFolder.SessionNotes;
-                    existingSession.Temp = sessionForFolder.Temp;
-                    existingSession.Operator = sessionForFolder.Operator.Truncate(120);
-                    existingSession.LocationGPSLatitude = sessionForFolder.LocationGPSLatitude;
-                    existingSession.LocationGPSLongitude = sessionForFolder.LocationGPSLongitude;
-                    existingSession.OriginalFilePath = sessionForFolder.OriginalFilePath;
+                    existingSession.SessionTag = sessionToUpdate.SessionTag.Truncate(120);
+                    existingSession.Equipment = sessionToUpdate.Equipment.Truncate(120);
+                    existingSession.Microphone = sessionToUpdate.Microphone.Truncate(120);
+                    existingSession.Weather = sessionToUpdate.Weather.Truncate(120);
+                    existingSession.Location = sessionToUpdate.Location.Truncate(120);
+                    existingSession.SessionDate = sessionToUpdate.SessionDate;
+                    existingSession.SessionStartTime = sessionToUpdate.SessionStartTime;
+                    existingSession.SessionEndTime = sessionToUpdate.SessionEndTime;
+                    existingSession.EndDate = sessionToUpdate.EndDate;
+                    existingSession.Sunset = sessionToUpdate.Sunset;
+                    existingSession.SessionNotes = sessionToUpdate.SessionNotes;
+                    existingSession.Temp = sessionToUpdate.Temp;
+                    existingSession.Operator = sessionToUpdate.Operator.Truncate(120);
+                    existingSession.LocationGPSLatitude = sessionToUpdate.LocationGPSLatitude;
+                    existingSession.LocationGPSLongitude = sessionToUpdate.LocationGPSLongitude;
+                    existingSession.OriginalFilePath = sessionToUpdate.OriginalFilePath;
                     NormalizeSessionDateTimes(ref existingSession);
                 }
 
@@ -4183,7 +4405,7 @@ namespace BatRecordingManager
             }
             catch (Exception ex)
             {
-                Tools.ErrorLog("Updating Session <" + sessionForFolder.SessionTag + "> - " + ex);
+                Tools.ErrorLog("Updating Session <" + sessionToUpdate.SessionTag + "> - " + ex);
             }
         }
 
@@ -5387,7 +5609,8 @@ namespace BatRecordingManager
 
                 var bestFit = variances
                     .FirstOrDefault(var => var.Item2 == variances.Min(minvar => minvar.Item2));
-                if (bestFit.Item2 < 7000.0d) return bestFit.Item1;
+
+                if (bestFit!=null && bestFit.Item2 < 7000.0d) return bestFit.Item1;
 
 
                 if (start.TotalMilliseconds <= 10 && end.Milliseconds <= 10 || start == end)
@@ -6875,7 +7098,7 @@ ADD [AutoID] NVARCHAR (50) NULL;"
         /// </summary>
         /// <param name="existingSegment"></param>
         /// <param name="dc"></param>
-        private static void UpdateSegmentCalls(LabelledSegment existingSegment, BatReferenceDBLinqDataContext dc)
+        public static void UpdateSegmentCalls(LabelledSegment existingSegment, BatReferenceDBLinqDataContext dc)
         {
             try
             {
@@ -6921,7 +7144,7 @@ ADD [AutoID] NVARCHAR (50) NULL;"
                         // there is no existing call for the segment so we make one and addit
                         dc.Calls.InsertOnSubmit(newCall);
                         dc.SubmitChanges();
-                        var link = new SegmentCall { LabelledSegmentID = existingSegment.Id, CallID = newCall.Id };
+                        var link = new SegmentCall { Id=-1, LabelledSegmentID = existingSegment.Id, CallID = newCall.Id };
                         dc.SegmentCalls.InsertOnSubmit(link);
                         dc.SubmitChanges();
                     }

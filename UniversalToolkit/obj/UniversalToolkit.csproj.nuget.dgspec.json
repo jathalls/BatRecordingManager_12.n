@@ -29,6 +29,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -74,7 +75,7 @@
             },
             "Microsoft.NETCore.Platforms": {
               "target": "Package",
-              "version": "[6.0.2, )"
+              "version": "[6.0.3, )"
             },
             "Microsoft.NETCore.Runtime.CoreCLR": {
               "target": "Package",
@@ -82,7 +83,7 @@
             },
             "Microsoft.VisualStudio.Language": {
               "target": "Package",
-              "version": "[17.1.386, )"
+              "version": "[17.2.3194, )"
             },
             "Microsoft.VisualStudio.SDK.EmbedInteropTypes": {
               "target": "Package",
@@ -90,7 +91,7 @@
             },
             "Microsoft.VisualStudio.Validation": {
               "target": "Package",
-              "version": "[17.0.43, )"
+              "version": "[17.0.53, )"
             },
             "Microsoft.Win32.Registry": {
               "target": "Package",
@@ -110,11 +111,11 @@
             },
             "Serilog": {
               "target": "Package",
-              "version": "[2.11.0-dev-01377, )"
+              "version": "[2.11.0, )"
             },
             "Shiny.Core": {
               "target": "Package",
-              "version": "[2.5.0.2985-preview, )"
+              "version": "[2.5.1, )"
             },
             "System.Data.DataSetExtensions": {
               "target": "Package",
@@ -139,6 +140,10 @@
             "System.Reflection": {
               "target": "Package",
               "version": "[4.3.0, )"
+            },
+            "System.Runtime.Serialization.Xml": {
+              "target": "Package",
+              "version": "[4.3.0, )"
             }
           },
           "imports": [
@@ -159,7 +164,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.300\\RuntimeIdentifierGraph.json"
         }
       }
     }

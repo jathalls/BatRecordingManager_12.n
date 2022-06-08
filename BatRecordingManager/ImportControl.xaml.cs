@@ -451,7 +451,7 @@ namespace BatRecordingManager
             _processWavFiles = false;
             _fileBrowser = new FileBrowser();
             _fileBrowser.SelectRootFolder(".txt");
-
+            SelectFoldersButton.IsEnabled = true;
             NextFolderButton.IsEnabled = true;
             TbkOutputText.Text = "";
             NextFolderButton_Click(sender, e);

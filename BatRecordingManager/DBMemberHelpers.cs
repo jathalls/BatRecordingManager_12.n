@@ -15,13 +15,17 @@
 //         limitations under the License.
 
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.Linq;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 using UniversalToolkit;
 
 namespace BatRecordingManager
@@ -35,13 +39,52 @@ namespace BatRecordingManager
         /// <summary>
         ///     Given a labelled segment, adds it to the recording in the database
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="segment"></param>
         /// <param name="dc"></param>
-        public static void AddLabelledSegment(this Recording recording, LabelledSegment result,
+        public static void AddLabelledSegment(this Recording recording, LabelledSegment segment,
             BatReferenceDBLinqDataContext dc)
         {
-            recording.LabelledSegments.Add(result);
+            List<BinaryData> imageList = new List<BinaryData>();
+            foreach(var sd in segment.SegmentDatas??new EntitySet<SegmentData>())
+            {
+                imageList.Add(sd.BinaryData);
+            }
+            
+            segment.SegmentDatas?.Clear();
+
+
+            recording.LabelledSegments.Add(segment);
             dc.SubmitChanges();
+            if (imageList != null && imageList.Count > 0)
+            {
+                for (int i = 0; i < imageList.Count; i++)
+                {
+                    var Link = new SegmentData();
+                    Link.Id = -1;
+                    Link.BinaryData = imageList[i];
+                    Link.SegmentId = segment.Id;
+                    dc.SegmentDatas.InsertOnSubmit(Link);
+                    dc.SubmitChanges();
+                }
+            }
+
+            segment.BatSegmentLinks?.Clear();
+            var batList = DBAccess.GetDescribedBats(segment.Comment,out string _);
+            
+            foreach(var bat in (batList?.bats)??new List<Bat>())
+            {
+                var bsLink = new BatSegmentLink();
+                bsLink.Id = -1;
+                bsLink.BatID = bat.Id;
+                bsLink.LabelledSegmentID = segment.Id;
+                dc.BatSegmentLinks.InsertOnSubmit(bsLink);
+                dc.SubmitChanges();
+            }
+
+            segment.SegmentCalls?.Clear();
+            DBAccess.UpdateSegmentCalls(segment, dc);
+
+            
         }
 
         public static Recording CreateRecording(string file, DateTime date, TimeSpan startTime, TimeSpan duration,
@@ -261,6 +304,24 @@ namespace BatRecordingManager
             DBAccess.UpdateRecording(existingRecording, listOfSegmentAndBatList, null);
         }
 
+        public static ObservableCollection<SegmentAndBatList> CreateListOfSegmentAndBatLists(this Recording recording)
+        {
+            ObservableCollection<SegmentAndBatList> result = new ObservableCollection<SegmentAndBatList>();
+            if(recording.LabelledSegments != null)
+            {
+                foreach(var seg in recording.LabelledSegments)
+                {
+                    var segmentAndBatList = new SegmentAndBatList();
+                    segmentAndBatList.Segment = seg;
+                    segmentAndBatList.batList = DBAccess.GetDescribedBats(seg.Comment,out string _);
+                    result.Add(segmentAndBatList);
+                }
+            }
+
+
+            return (result);
+        }
+
         /// <summary>
         /// Returns the timespan as a string in the format [-]HH:MM
         /// </summary>
@@ -468,7 +529,7 @@ namespace BatRecordingManager
         {
             get
             {
-                return (Recording.isWavRecording);
+                return (Recording?.isWavRecording)??false;
             }
         }
 
@@ -750,7 +811,7 @@ namespace BatRecordingManager
                 }
                 else
                 {
-                    if (RecordingSession.hasGPSLocation)
+                    if ((RecordingSession?.hasGPSLocation)??false)
                     {
                         result.latitude = RecordingSession.LocationGPSLatitude.ToString() + "*";
                         result.longitude = RecordingSession.LocationGPSLongitude.ToString() + "*";
@@ -992,10 +1053,41 @@ namespace BatRecordingManager
         private TimeSpan? _sunset = null;
     }
 
+    
+
     //##################################################################################################################################
+    
+
 
     public partial class RecordingSession
     {
+
+        public void ToStream()
+        {
+            try
+            {
+                DBAccess.SerializeSession(this, @"C:\BRMTestData\Session.json");
+               
+                /*XmlSerializer serializer = XmlSerializer.FromTypes(new[] { typeof(RecordingSession) })[0];
+                
+                TextWriter writer = new StreamWriter(@"C:\BRMTestData\Session.xml");
+                serializer.Serialize(writer, this);
+                writer.Close();*/
+                /*TextWriter jsonWriter=new StreamWriter(@"C:\BRMTestData\Session.json");
+                var jsonSerializer = new JsonSerializer();
+                jsonSerializer.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                jsonSerializer.Formatting = Formatting.Indented;
+                
+                jsonSerializer.Serialize(jsonWriter, this);
+                jsonWriter.Flush();
+                jsonWriter.Close(); */
+
+            }catch(Exception ex)
+            {
+                Debug.WriteLine($"Serialization error for RecordingSession:- {ex.Message}");
+            }
+
+        }
         /// <summary>
         /// cached boolean returns true if the GPS co-ordinates are non-null
         /// in the range 90 to -90 and 180 to -180 and they are not both
@@ -1014,6 +1106,7 @@ namespace BatRecordingManager
                     LocationGPSLongitude > 180.0m)
                 {
                     _hasGPSLocation = false;
+                    
                 }
                 else
                 {

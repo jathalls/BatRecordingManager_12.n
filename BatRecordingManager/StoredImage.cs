@@ -841,7 +841,8 @@ namespace BatRecordingManager
             if (blob != null && !blob.SegmentDatas.IsNullOrEmpty())
             {
                 var files = (from sd in blob.SegmentDatas
-                             select sd.LabelledSegment.Recording.RecordingSession.OriginalFilePath.Trim() + @"\" +
+                             where sd.LabelledSegment!=null
+                             select sd.LabelledSegment.Recording.RecordingSession.OriginalFilePath?.Trim() + @"\" +
                                     sd.LabelledSegment.Recording.RecordingName)
                     .Aggregate((i, j) => i + ";" + j);
                 /*if (!files.IsNullOrEmpty())

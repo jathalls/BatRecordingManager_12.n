@@ -795,7 +795,7 @@ namespace BatRecordingManager
             if (!string.IsNullOrWhiteSpace(folder))
             {
 
-                string folderPath = Path.GetFullPath(folder);
+                string folderPath = Path.GetDirectoryName(folder);
                 if (Directory.Exists(folderPath))
                 {
                     var files = Directory.GetFiles(folderPath, "*.txt");
@@ -1038,9 +1038,9 @@ namespace BatRecordingManager
                             {
                                 bestMatchValue = matchValue;
                                 bestSoFar = target;
-                                Debug.Write("v/ ");
+                                //Debug.Write("v/ ");
                             }
-                            Debug.WriteLine($"{reference} - {target} = {matchValue}");
+                            //Debug.WriteLine($"ref={reference} - tgt={target} = match={matchValue}");
                         }
                     }
                 }

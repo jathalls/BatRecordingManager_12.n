@@ -223,6 +223,7 @@ namespace BatRecordingManager
 
                 var proc = new Process();
                 proc.StartInfo.FileName = fqFilename;
+                proc.StartInfo.WorkingDirectory = folderPath;
                 proc.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
                 proc.Start();
 

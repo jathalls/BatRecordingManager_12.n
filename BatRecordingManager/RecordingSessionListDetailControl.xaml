@@ -69,13 +69,43 @@
                         from the database"
                         Style="{StaticResource SimpleButton}" Click="DeleteRecordingSessionButton_Click" />
                     <Button
-                        x:Name="ExportSessionDataButton"
-                        Width="50" Height="25"
-                        Content="Export"
+                        x:Name="WriteSessionDataButton"
+                        Width="80" Height="25"
+                        Content="ReWrite(.txt)"
                         IsEnabled="False"
-                        ToolTip="Re-writes all the .txt files for the recordings in this session.  Overwrites existing files. [CTRL-CLICK] only writes missing files"
-                        Style="{StaticResource SimpleButton}" Click="ExportSessionDataButton_Click">
+                        
+                        Style="{StaticResource SimpleButton}" 
+                        Click="WriteSessionDataButton_Click">
+                        <Button.ToolTip>
+                            <TextBlock>
+                                ReWrites all the .txt files for the session and for each recording in the session<LineBreak/>
+                                CTRL-Click only supplies missing .TXT files and does not change existing files
+                            </TextBlock>
+                        </Button.ToolTip>
                     </Button>
+                    <Button
+                        x:Name="ExportToJsonButton"
+                        Content="Export"
+                        Width="50"
+                        Height="25"
+                        IsEnabled="False"
+                        Style="{StaticResource SimpleButton}"
+                        ToolTip="Writes all details of the selected session to a JSON text file" 
+                        Click="ExportToJsonButton_Click"
+                        
+                        />
+                    <Button
+                        x:Name="ImportFromJsonButton"
+                        Content="Import"
+                        Width="50"
+                        Height="25"
+                        IsEnabled="True"
+                       Style="{StaticResource SimpleButton}"
+                        ToolTip="Writes all details of the selected session to a JSON text file" 
+                        Click="ImportFromJsonButton_Click" 
+                        
+                        
+                        />
                     <Button
                          x:Name="ShowMapButton"
                         Style="{StaticResource SimpleButton}"
@@ -108,10 +138,13 @@
                     Background="{StaticResource WindowBackgroundBrush}"
                     Grid.Row="1" Grid.Column="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="213*" />
-                        <ColumnDefinition Width="15*" />
-                        <ColumnDefinition Width="56*" />
-                        <ColumnDefinition Width="158*" />
+                        <ColumnDefinition Width="100*" />
+                        <ColumnDefinition Width="19*"/>
+                        <ColumnDefinition Width="137*"/>
+                        <ColumnDefinition Width="18*" />
+                        <ColumnDefinition Width="67*" />
+                        <ColumnDefinition Width="41*" />
+                        <ColumnDefinition Width="149*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1" />
@@ -196,7 +229,7 @@
                         IsReadOnly="True"
                         IsTextSearchEnabled="True"
                         
-                        Grid.ColumnSpan="4">
+                        Grid.ColumnSpan="7">
 
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">

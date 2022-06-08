@@ -158,7 +158,7 @@ namespace BatRecordingManager
                     LabelledSegmentsList = new ObservableCollection<LabelledSegment>(recording.LabelledSegments);
                     var view = CollectionViewSource.GetDefaultView(LabelledSegmentsListView.ItemsSource);
                     view?.Refresh();
-                    Debug.WriteLine(LabelledSegmentsListView.Items.Count);
+                    Debug.WriteLine("AutoFill:-"+LabelledSegmentsListView.Items.Count);
                 }
             }
 

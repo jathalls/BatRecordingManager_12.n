@@ -1432,7 +1432,7 @@ namespace BatRecordingManager
 
             externalProcess.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
 
-            SetAudacityExportFolder(Path.GetFullPath(FQWavFileName)); // NB assumes C:\audacity-win-portable\
+            SetAudacityExportFolder(Path.GetDirectoryName(FQWavFileName)); // NB assumes C:\audacity-win-portable\
 
             var started = externalProcess.Start();
             while (!externalProcess.Responding)
@@ -1897,22 +1897,29 @@ mod-script-pipe=C:\\audacity-win-portable\\modules\\mod-script-pipe.dll");
 
             if (wavfile.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) && File.Exists(wavfile))
             {
-                using (var wfr = new WaveFileReader(wavfile))
+                try
                 {
-                    var metadata = wfr.ExtraChunks;
-                    foreach (var md in metadata)
+                    using (var wfr = new WaveFileReader(wavfile))
                     {
-                        if (md.IdentifierAsString == "guan")
+                        var metadata = wfr.ExtraChunks;
+                        foreach (var md in metadata)
                         {
-                            guanoTime = ReadGuanoTimeStamp(wfr, md, out duration);
-                            if (guanoTime.Year < 2000) guanoTime = DateTime.Now;
-                        }
-                        else if (md.IdentifierAsString == "wamd")
-                        {
-                            wamdTime = ReadWAMDTimeStamp(wfr, md, out duration);
-                            if (wamdTime.Year < 2000) wamdTime = DateTime.Now;
+                            if (md.IdentifierAsString == "guan")
+                            {
+                                guanoTime = ReadGuanoTimeStamp(wfr, md, out duration);
+                                if (guanoTime.Year < 2000) guanoTime = DateTime.Now;
+                            }
+                            else if (md.IdentifierAsString == "wamd")
+                            {
+                                wamdTime = ReadWAMDTimeStamp(wfr, md, out duration);
+                                if (wamdTime.Year < 2000) wamdTime = DateTime.Now;
+                            }
                         }
                     }
+                }catch(Exception ex)
+                {
+                    Tools.ErrorLog($"Invalid wavfile {wavfile}:-{ex.Message}");
+                    return (result);
                 }
                 if (result > guanoTime) result = guanoTime;
                 if (result > wamdTime) result = wamdTime;

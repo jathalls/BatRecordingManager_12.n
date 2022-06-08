@@ -3,7 +3,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <AssemblyVersion>12.1.*</AssemblyVersion>
+    <AssemblyVersion>12.2.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <BuildToolsFxCopVersion>1.0.1</BuildToolsFxCopVersion>
     <PublishUrl>E:\Publish\</PublishUrl>
@@ -211,6 +211,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
+    <None Update="bing.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="DataClasses1.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
       <LastGenOutput>DataClasses1.designer.cs</LastGenOutput>
@@ -311,12 +314,12 @@
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageReference Include="Microsoft.Maps.MapControl.WPF" Version="1.0.0.3" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.3" />
     <PackageReference Include="Microsoft.NETCore.Runtime.CoreCLR" Version="2.0.8" />
     <PackageReference Include="Microsoft.NETCore.Targets" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.1.386" />
+    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.2.3194" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.36" />
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.43" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.53" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="6.0.0-preview.5.21301.5" />
     <PackageReference Include="Mindbox.Data.Linq" Version="5.0.0" />
     <PackageReference Include="Mindbox.Expressions" Version="3.3.0" />
@@ -333,6 +336,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Xml" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="BatEdit.cs" />
@@ -371,7 +375,7 @@ if not exist $(ProjectDir)\APIKeysLocal.cs (
     <SignAssembly>False</SignAssembly>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <FileVersion>12.1.0.0</FileVersion>
+    <FileVersion>12.2.0.0</FileVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>

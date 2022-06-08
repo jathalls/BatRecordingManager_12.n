@@ -26,6 +26,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -36,7 +37,7 @@ namespace BatRecordingManager
     /// <summary>
     ///     Interaction logic for RecordingSessionListDetailControl.xaml
     /// </summary>
-    public partial class RecordingSessionListDetailControl : UserControl, INotifyPropertyChanged
+    public partial class RecordingSessionListDetailControl : System.Windows.Controls.UserControl, INotifyPropertyChanged
     {
         /// <summary>
         ///     The index of the first session on the current page or the page to be loaded
@@ -109,6 +110,8 @@ namespace BatRecordingManager
         /// <returns></returns>
         public bool GenerateReportSet(RecordingSession SpecificSession = null, bool doFullExport = false)
         {
+            
+            
             var reportBatStatsList = new List<BatStatistics>();
             var reportSessionList = new List<RecordingSession>();
             var reportRecordingList = new List<Recording>();
@@ -224,6 +227,7 @@ namespace BatRecordingManager
         /// <param name="e"></param>
         public void ReportSessionDataButton_Click(object sender, RoutedEventArgs e)
         {
+
             //UiServices.SetBusyState();
             GenerateReportSet(sender, e);
         }
@@ -496,6 +500,12 @@ namespace BatRecordingManager
                 }
         }
 
+        /// <summary>
+        /// Event handler in the event of a change to the RecordingSessions list.  Triggers a switch
+        /// to the RecordingSessions tab of the main window, but does not refresh the data in the list.
+        /// For that call RefreshData()
+        /// </summary>
+        /// <param name="e"></param>
         protected virtual void OnSessionChanged(EventArgs e) => SessionChanged?.Invoke(this, e);
 
         private void AddEditRecordingSession(RecordingSessionForm recordingSessionForm)
@@ -509,7 +519,7 @@ namespace BatRecordingManager
                 if (!recordingSessionForm.ShowDialog() ?? false)
                     if (recordingSessionForm.DialogResult ?? false)
                         if (!string.IsNullOrWhiteSpace(error))
-                            MessageBox.Show(error);
+                            System.Windows.MessageBox.Show(error);
 
                 RefreshData(PageSize, CurrentTopOfScreen);
             }
@@ -540,7 +550,7 @@ Mouse.OverrideCursor = null;*/
                 newSession.SessionEndTime = new TimeSpan(24, 0, 0);
                 recordingSessionForm.SetRecordingSession(newSession);
                 Mouse.OverrideCursor = null;
-                AddEditRecordingSession(recordingSessionForm);
+                AddEditRecordingSession(recordingSessionForm); // Refreshes the data
                 OnSessionChanged(EventArgs.Empty);
             }
         }
@@ -582,7 +592,7 @@ Mouse.OverrideCursor = null;*/
                         var session =
                             DBAccess.GetRecordingSession((RecordingSessionListView.SelectedItems[i] as RecordingSessionData)
                                 .Id);
-                        var result = MessageBox.Show(
+                        var result = System.Windows.MessageBox.Show(
                             $"This will remove session {session.SessionTag} From the Database\nAre You Sure?",
                             "Delete RecordingSession", MessageBoxButton.YesNo);
                         if (result == MessageBoxResult.Yes)
@@ -665,7 +675,7 @@ Mouse.OverrideCursor = null;*/
         /// <param name="e">
         ///     The <see cref="RoutedEventArgs" /> instance containing the event data.
         /// </param>
-        private void ExportSessionDataButton_Click(object sender, RoutedEventArgs e)
+        private void WriteSessionDataButton_Click(object sender, RoutedEventArgs e)
         {
             bool partial = false;
             if (Keyboard.IsKeyDown(Key.RightCtrl) || Keyboard.IsKeyDown(Key.LeftCtrl))
@@ -675,11 +685,14 @@ Mouse.OverrideCursor = null;*/
             RecordingSession selectedSession = GetSelectedSession();
             if (selectedSession == null) return;
             if (selectedSession.Recordings == null || selectedSession.Recordings.Count <= 0) return;
+            //selectedSession.ToStream();
             if (!Directory.Exists(selectedSession.OriginalFilePath)) return;
 
             // only carry on if we have just one session selected
             using (new WaitCursor())
             {
+                
+                Debug.WriteLine("Serialized Session");
                 selectedSession.WriteTextFile(partial);
                 foreach (var recording in selectedSession.Recordings)
                 {
@@ -693,6 +706,7 @@ Mouse.OverrideCursor = null;*/
 
         /// <summary>
         ///     Handles the Click event of the ExportSessionDataButton control.
+        ///     Writes a summary of the session info to c:ExportedBatData
         /// </summary>
         /// <param name="sender">
         ///     The source of the event.
@@ -700,7 +714,7 @@ Mouse.OverrideCursor = null;*/
         /// <param name="e">
         ///     The <see cref="RoutedEventArgs" /> instance containing the event data.
         /// </param>
-        private void ExportSessionDataButton_Click_old(object sender, RoutedEventArgs e)
+        private void WriteSessionDataButton_Click_old(object sender, RoutedEventArgs e)
         {
             using (new WaitCursor("Export session data"))
             {
@@ -734,7 +748,7 @@ Mouse.OverrideCursor = null;*/
 
                                 if (!Directory.Exists(folder))
                                 {
-                                    MessageBox.Show("Unable to create folder for export files: " + folder);
+                                    System.Windows.MessageBox.Show("Unable to create folder for export files: " + folder);
                                     Mouse.OverrideCursor = null;
                                     return;
                                 }
@@ -942,11 +956,13 @@ Mouse.OverrideCursor = null;*/
                     RecordingSessionListView.SelectedItems.Count <= 0) return;
                 if (RecordingSessionListView.SelectedItems.Count == 1)
                 {
-                    ExportSessionDataButton.IsEnabled = true;
+                    WriteSessionDataButton.IsEnabled = true;
+                    ExportToJsonButton.IsEnabled = true;
                 }
                 else
                 {
-                    ExportSessionDataButton.IsEnabled = false;
+                    WriteSessionDataButton.IsEnabled = false;
+                    ExportToJsonButton.IsEnabled = false;
                 }
                 foreach (var item in RecordingSessionListView.SelectedItems)
                 {
@@ -965,18 +981,21 @@ Mouse.OverrideCursor = null;*/
                 SegmentImageScroller.Clear();
                 if (RecordingSessionControl.recordingSession == null)
                 {
-                    ExportSessionDataButton.IsEnabled = false;
+                    WriteSessionDataButton.IsEnabled = false;
                     EditRecordingSessionButton.IsEnabled = false;
                     DeleteRecordingSessionButton.IsEnabled = false;
+                    ExportToJsonButton.IsEnabled = false;
                     CompareImagesButton.IsEnabled = false;
                 }
                 else
                 {
                     DisplaySessionSummary(RecordingSessionControl.recordingSession); // runs asynchronously
 
-                    ExportSessionDataButton.IsEnabled = true;
+                    WriteSessionDataButton.IsEnabled = true;
                     EditRecordingSessionButton.IsEnabled = true;
                     DeleteRecordingSessionButton.IsEnabled = true;
+                    ImportFromJsonButton.IsEnabled = true;
+                    ExportToJsonButton.IsEnabled = true;
                     CompareImagesButton.IsEnabled = true;
                 }
             }
@@ -1168,5 +1187,69 @@ Mouse.OverrideCursor = null;*/
             RecordingsListControl.ApplyFilter(filterList);
 
         }
+
+        private void ExportToJsonButton_Click(object sender, RoutedEventArgs e)
+        {
+            string fileName = "";
+            string folder = "";
+            RecordingSession selectedSession = GetSelectedSession();
+            if (selectedSession == null) return;
+            if (selectedSession.Recordings == null || selectedSession.Recordings.Count <= 0) return;
+            fileName = Path.Combine(selectedSession.SessionTag + ".json");
+            if (!string.IsNullOrWhiteSpace(selectedSession.OriginalFilePath))
+            {
+                folder=Path.GetDirectoryName(selectedSession.OriginalFilePath);
+            }
+            else
+            {
+                folder = @"C:\BRMBackup";
+                
+            }
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+            DBAccess.SerializeSession(selectedSession, Path.Combine(folder,fileName));
+        }
+
+        private void ImportFromJsonButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Directory.Exists(@"C:\BRMBackup")) Directory.CreateDirectory(@"C:\BRMBackup");
+            using (var dialog = new OpenFileDialog
+            {
+                DefaultExt = ".wav",
+                Filter = "JSON files (*.json)|*.json|All Files (*.*)|*.*",
+                FilterIndex = 0,
+                InitialDirectory = @"C:\BRMBackup",
+                Title = "Select JSON data file",
+                ValidateNames = true,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                FileName = "*.json"
+            })
+            {
+                
+
+                
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string file=dialog.FileName;
+                    if (File.Exists(file))
+                    {
+                        DBAccess.DeSerializeSession(file);
+                        this.RefreshData();
+                        OnSessionChanged(EventArgs.Empty);
+                        
+                    }
+                }
+                    
+
+                    
+            }
+        }
+
+        
     }
 }

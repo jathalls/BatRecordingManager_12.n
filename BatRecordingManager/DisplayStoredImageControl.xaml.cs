@@ -490,7 +490,7 @@ namespace BatRecordingManager
         /// <param name="e"><see cref="EventArgs" /> object that provides the arguments for the event.</param>
         protected virtual void OnDuplicate(DuplicateEventArgs e)
         {
-            Debug.WriteLine(e.ToString());
+            Debug.WriteLine("OnDuplicate:- "+e.ToString());
             EventHandler<EventArgs> handler = null;
 
             lock (_duplicateEventLock)

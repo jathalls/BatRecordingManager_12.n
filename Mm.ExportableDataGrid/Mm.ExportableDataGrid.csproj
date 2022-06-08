@@ -68,15 +68,15 @@
     <PackageReference Include="LinqStatistics" Version="2.3.0" />
     <PackageReference Include="LiveCharts.Wpf.Core" Version="0.9.8" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.3" />
     <PackageReference Include="Microsoft.NETCore.Runtime.CoreCLR" Version="2.0.8" />
     <PackageReference Include="Microsoft.NETCore.Targets" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.1.386" />
+    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.2.3194" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.36" />
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.43" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.53" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="6.0.0-preview.5.21301.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Shiny.Core" Version="2.5.0.2985-preview" />
+    <PackageReference Include="Shiny.Core" Version="2.5.1" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.6.0-preview3.19128.7" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.18" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
@@ -85,6 +85,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Xml" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
