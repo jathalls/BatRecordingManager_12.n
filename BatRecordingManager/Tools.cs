@@ -1641,7 +1641,11 @@ namespace BatRecordingManager
         /// <param name="folderPath"></param>
         internal static void SetAudacityExportFolder(string folderPath)
         {
-            folderPath = new FileInfo(folderPath).Directory.FullName;
+            if (!Directory.Exists(folderPath))
+            {
+                var info = new FileInfo(folderPath);
+                folderPath = info.Directory.FullName;
+            }
             string moddedFolderPath = folderPath.Replace(@"\\", @"\"); // first ensure that the path only contains single backslashes - which it should
             moddedFolderPath = moddedFolderPath.Replace(@"\", @"\\"); // then ensure that all backslashes are doubled for insertion into the config file
             string configFile = @"C:\audacity-win-portable\Portable Settings\audacity.cfg";

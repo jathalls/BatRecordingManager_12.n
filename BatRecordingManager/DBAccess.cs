@@ -7288,6 +7288,33 @@ ADD [AutoID] NVARCHAR (50) NULL;"
                 }
             }
         }
+
+        /// <summary>
+        /// Looks for a recordingSession which has the given path as it's original file path, and if
+        /// found returns the SessionTag for that session, otherwise returns null or an empty string.
+        /// </summary>
+        /// <param name="path">The folder path for the desired session tag</param>
+        /// <returns></returns>
+        
+        internal static string GetSessionTagForFolder(string path)
+        {
+            var result = "";
+            if (!path.EndsWith(@"\"))
+            {
+                path = path + @"\";
+            }
+
+            var dc = GetFastDataContext();
+            var sessionList = from sess in dc.RecordingSessions
+                              where sess.OriginalFilePath == path
+                              select sess.SessionTag;
+            if (!sessionList.IsNullOrEmpty())
+            {
+                return (sessionList.First());
+            }
+
+            return (result);
+        }
     } // end DBAccess
 
     //###########################################################################################################################################

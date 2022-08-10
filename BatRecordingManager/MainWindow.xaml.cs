@@ -41,6 +41,8 @@ namespace BatRecordingManager
             try
             {
                 Application.Current.MainWindow = this;
+                this.Closed += MainWindow_Closed;
+                this.Loaded += MainWindow_Loaded;
                 try
                 {
                     Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
@@ -133,6 +135,26 @@ namespace BatRecordingManager
             catch (Exception ex)
             {
                 Tools.ErrorLog(ex + "\n" + ex.Message);
+            }
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            recordingSessionListControl.ParentWindow = this;
+        }
+
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            var p = Process.GetProcessesByName("BatCallAnalyserA");
+            if (p != null && p.Length > 0)
+            {
+                Debug.WriteLine($"Main Window Closed:- BCA running {p[0].MainWindowTitle}, {p[0].StartTime}");
+                foreach(var proc in p)
+                {
+                    Debug.WriteLine($"Closing {proc.MainWindowTitle}");
+                    proc.CloseMainWindow();
+                }
+                //Tools.InfoLog($"BCA running {p[0].MainWindowTitle}/{process.MainWindowTitle}, {process.StartTime}");
             }
         }
 
@@ -386,10 +408,14 @@ namespace BatRecordingManager
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void miAnalyseFiles_Click(object sender, RoutedEventArgs e)
+        public void miAnalyseFiles_Click(object sender, RoutedEventArgs e)
         {
             _runKaleidoscope = false || Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
             _useCurrentSession = false || Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
+            if (sender is RecordingSessionListDetailControl)
+            {
+                _useCurrentSession = true;
+            }
             if (_analyseAndImport == null)
             {
                 _importPictureDialog = new ImportPictureDialog();

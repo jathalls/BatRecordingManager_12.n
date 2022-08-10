@@ -212,24 +212,33 @@ namespace BatRecordingManager
         {
             string folderPath = session.OriginalFilePath;
             string fqFilename = "";
-            if (Directory.Exists(folderPath))
+            try
             {
-                fqFilename = Path.Combine(folderPath, $"{session.SessionTag}_Map.html");
-                if (File.Exists(fqFilename))
+                if (Directory.Exists(folderPath))
                 {
-                    File.Delete(fqFilename);
+                    fqFilename = Path.Combine(folderPath, $"{session.SessionTag}_Map.html");
+                    if (File.Exists(fqFilename))
+                    {
+                        File.Delete(fqFilename);
+                    }
+                    File.WriteAllText(fqFilename, template);
+
+                    var proc = new Process();
+                    proc.StartInfo.FileName = fqFilename;
+                    proc.StartInfo.WorkingDirectory = folderPath;
+                    proc.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
+                    proc.StartInfo.UseShellExecute = true;
+                    
+                    
+                    proc.Start();
+
+                    //var webWindow = new WebPageWindow();
+                    //webWindow.Fill(fqFilename);
+                    //webWindow.Show();
                 }
-                File.WriteAllText(fqFilename, template);
-
-                var proc = new Process();
-                proc.StartInfo.FileName = fqFilename;
-                proc.StartInfo.WorkingDirectory = folderPath;
-                proc.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
-                proc.Start();
-
-                //var webWindow = new WebPageWindow();
-                //webWindow.Fill(fqFilename);
-                //webWindow.Show();
+            }catch(Exception ex)
+            {
+                Tools.InfoLog($"Unable to execute HTML file:- {fqFilename}:- {ex.Message}");
             }
             return (fqFilename);
         }

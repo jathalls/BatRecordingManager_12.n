@@ -1060,9 +1060,14 @@ namespace BatRecordingManager
         private void miAnalyseSegment_Click(object sender, RoutedEventArgs e)
         {
             bool filter = false;
+            bool display = false;
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
             {
                 filter = true;
+            }
+            if(Keyboard.IsKeyDown(Key.LeftShift ) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                display = true;
             }
             var _sender = sender as MenuItem;
             var selection = GetSelectedSegments();
@@ -1090,8 +1095,8 @@ namespace BatRecordingManager
                         segList.Add(sel);
                         BitmapSource bmps = deepAnalyser.GetImage();
                         var sonagramGenerator = new SegmentSonagrams();
-                        var image = sonagramGenerator.GenerateForSegment(sel, deepAnalyser.param,filterParams: filterParams);
-                                
+                        var image = sonagramGenerator.GenerateForSegment(sel, deepAnalyser.param,filterParams: filterParams,display: display);
+                            
 
                         //sel = DBAccess.GetLabelledSegment(sel.Id);
                         //var images = sel.GetImageList();
@@ -1102,6 +1107,12 @@ namespace BatRecordingManager
 
                         if (image != null)
                         {
+                            if (display)
+                            {
+                                //var ft = sonagramGenerator.Ffts;
+                                SpectrogramWindow.Display(sonagramGenerator);
+
+                            }
                             image.DisplayActualSize = true;
                             if (image.segmentsForImage == null) image.segmentsForImage = new List<LabelledSegment>();
                             if (!image.segmentsForImage.Contains(sel))
@@ -1216,7 +1227,8 @@ namespace BatRecordingManager
             {
                 var recordingId = (selection?.First()?.RecordingID) ?? -1;
                 SegmentSonagrams sonagramGenerator = new SegmentSonagrams();
-                sonagramGenerator.GenerateForSegments(selection, experimental);
+                sonagramGenerator.GenerateForSegments(selection, experimental,display:true);
+                SpectrogramWindow.Display(sonagramGenerator);
                 UpdateRecordingsList(recordingId);
             }
         }

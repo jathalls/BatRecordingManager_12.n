@@ -29,6 +29,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Application = System.Windows.Application;
 
 //using Task = Microsoft.Build.Utilities.Task;
 
@@ -1142,6 +1143,8 @@ Mouse.OverrideCursor = null;*/
         }
 
         private List<Bat> filterList { get; set; } = new List<Bat>();
+        public MainWindow ParentWindow { get; internal set; }
+
         private void miFilterByBat_Click_1(object sender, RoutedEventArgs e)
         {
             /// <summary>
@@ -1248,6 +1251,12 @@ Mouse.OverrideCursor = null;*/
 
                     
             }
+        }
+
+        private void miSessionAnalyseAndImport_Click(object sender, RoutedEventArgs e)
+        {
+            ParentWindow.miAnalyseFiles_Click(this, e);
+
         }
 
         

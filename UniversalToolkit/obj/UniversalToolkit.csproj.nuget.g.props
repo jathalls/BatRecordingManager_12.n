@@ -16,10 +16,10 @@
     <SourceRoot Include="C:\Program Files\dotnet\sdk\NuGetFallbackFolder\" />
   </ItemGroup>
   <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)microsoft.dotnet.upgradeassistant.extensions.default.analyzers\0.3.310801\build\Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.dotnet.upgradeassistant.extensions.default.analyzers\0.3.310801\build\Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers.props')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.dotnet.upgradeassistant.extensions.default.analyzers\0.4.336902\build\Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.dotnet.upgradeassistant.extensions.default.analyzers\0.4.336902\build\Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers.props')" />
   </ImportGroup>
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <PkgMicrosoft_VisualStudio_Threading_Analyzers Condition=" '$(PkgMicrosoft_VisualStudio_Threading_Analyzers)' == '' ">C:\Users\justi\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.2.32</PkgMicrosoft_VisualStudio_Threading_Analyzers>
-    <PkgMicrosoft_DotNet_UpgradeAssistant_Extensions_Default_Analyzers Condition=" '$(PkgMicrosoft_DotNet_UpgradeAssistant_Extensions_Default_Analyzers)' == '' ">C:\Users\justi\.nuget\packages\microsoft.dotnet.upgradeassistant.extensions.default.analyzers\0.3.310801</PkgMicrosoft_DotNet_UpgradeAssistant_Extensions_Default_Analyzers>
+    <PkgMicrosoft_DotNet_UpgradeAssistant_Extensions_Default_Analyzers Condition=" '$(PkgMicrosoft_DotNet_UpgradeAssistant_Extensions_Default_Analyzers)' == '' ">C:\Users\justi\.nuget\packages\microsoft.dotnet.upgradeassistant.extensions.default.analyzers\0.4.336902</PkgMicrosoft_DotNet_UpgradeAssistant_Extensions_Default_Analyzers>
   </PropertyGroup>
 </Project>

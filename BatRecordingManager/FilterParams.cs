@@ -12,8 +12,8 @@ namespace BatRecordingManager
     /// </summary>
     internal class FilterParams
     {
-        public int HighPassFilterFrequency { get; set; } = 192000;
-        public int LowPassFilterFrequency { get; set; } = 15000;
+        public int HighPassFilterFrequency { get; set; } = 15000;
+        public int LowPassFilterFrequency { get; set; } = 192000;
 
         public double FilterQ { get; set; } = 1.0d;
 

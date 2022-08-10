@@ -263,6 +263,7 @@
                             <ContextMenu>
                                 <MenuItem Header="Compare All Images" Click="CompareImagesButton_Click" />
                                 <MenuItem Header="Generate Sonagram Images" Click="GenerateSonagrams_Click" />
+                                <MenuItem Header="Analyse and Import" Click="miSessionAnalyseAndImport_Click" />
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                         <!--

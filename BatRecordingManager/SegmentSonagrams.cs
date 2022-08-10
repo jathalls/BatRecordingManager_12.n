@@ -1,4 +1,6 @@
 ﻿
+using LinqStatistics;
+using Microsoft.Maps.MapControl.WPF;
 using NAudio.Dsp;
 using NAudio.Wave;
 using Spectrogram;
@@ -15,9 +17,9 @@ namespace BatRecordingManager
 {
     internal class SegmentSonagrams
     {
-        
+        public List<double[]> Ffts { get; private set; }
 
-        public bool GenerateForSegments(List<LabelledSegment> segmentList, bool experimental = false)
+        public bool GenerateForSegments(List<LabelledSegment> segmentList, bool experimental = false,bool display=false)
         {
             if (segmentList != null && segmentList.Any())
             {
@@ -26,7 +28,7 @@ namespace BatRecordingManager
                     if (seg.BatSegmentLinks?.Any() ?? false)
                     {
                         ObservableCollection<StoredImage> imageList = new ObservableCollection<StoredImage>();
-                        StoredImage spectrogram = GenerateSpectrogram(seg, experimental: experimental);
+                        StoredImage spectrogram = GenerateSpectrogram(seg, experimental: experimental,display: display);
                         if (spectrogram != null)
                         {
                             imageList.Add(spectrogram);
@@ -44,9 +46,9 @@ namespace BatRecordingManager
             return (Task.Run(() => GenerateForSegments(segments)));
         }
 
-        internal StoredImage GenerateForSegment(LabelledSegment sel, Parametrization param = null,FilterParams filterParams=null)
+        internal StoredImage GenerateForSegment(LabelledSegment sel, Parametrization param = null,FilterParams filterParams=null,bool display=false)
         {
-            return (GenerateSpectrogram(sel, param,filterParams: filterParams));
+            return (GenerateSpectrogram(sel, param,filterParams: filterParams,display: display));
         }
 
         async internal void GenerateForSession(RecordingSession selectedSession)
@@ -58,9 +60,10 @@ namespace BatRecordingManager
 
         public event EventHandler<EventArgs> GenerationComplete;
 
+        private FilterParams FilterParams = null;
         protected virtual void OnGenerationComplete(EventArgs args) => GenerationComplete?.Invoke(this, args);
 
-
+        private LabelledSegment segment = null;
         /// <summary>
         /// Generates a spectrogram of the given LabelledSegment.  If the segment already has an image
         /// of type SPCT then that is retrieved and the image of it is modified to the new spectrogram
@@ -69,16 +72,17 @@ namespace BatRecordingManager
         /// <param name="param">instance of Parametrization for extracting numerical data</param>
         /// <param name="experimental">boolean - true gives a spectrogram with hyerbolic (1/f) frequency axis</param>
         /// <returns></returns>
-        private StoredImage GenerateSpectrogram(LabelledSegment seg, Parametrization param = null, 
+        private StoredImage GenerateSpectrogram(LabelledSegment seg, Parametrization param = null,
             bool experimental = false, decimal percentOverlap = -1.0m,
-            FilterParams filterParams=null)
+            FilterParams filterParams = null, bool display = false)
         {
-
+            segment = seg;
+            FilterParams = filterParams;
             if (seg == null || (seg.StartOffset.TotalMilliseconds == 0 && seg.EndOffset == seg.StartOffset)) return (null);
             if (string.IsNullOrWhiteSpace(seg.Comment) || seg.Comment.Contains("No Bats")) return (null);
             if (seg.BatSegmentLinks == null || seg.BatSegmentLinks.Count <= 0) return (null);
-            StoredImage si = DBAccess.GetSpectrogramForSegment(seg);
-            if (si == null)
+            StoredImage si = DBAccess.GetSpectrogramForSegment(seg); // retrieve if already exists in the database
+            if (si == null || display)
             {
                 //int FFTOrder = 10;
                 // List<float> data = GetData(seg, FFTOrder, out int sampleRate);
@@ -112,9 +116,16 @@ namespace BatRecordingManager
 
                 sg.Add(data.audio);
                 sg.Colormap = Colormap.GrayscaleReversed;
+                var ft=sg.GetFFTs();
+                Ffts = ft;
+                maxFrequencykHzToShow = maxFrequency / 1000.0d;
+                maxFrequencykHz = (sampleRate / 2.0d) / 1000.0d;
+                secsPerFft=sg.SecPerPx;
                 //sg.SetColormap(Colormap.GrayscaleReversed);
                 //sg.SaveImage(@"C:\BRMTestData\Test.png", dB: true, dBScale: 20, intensity: 5);
                 Debug.WriteLine($"Scale={settings.Spectrogram.scale}");
+
+                //sg.getFFTs returns a List of double[]
                 bmp = sg.GetBitmap(dB: true, dBScale: settings.Spectrogram.dBScale, intensity: settings.Spectrogram.intensity);
                 if (experimental)
                 {
@@ -133,6 +144,11 @@ namespace BatRecordingManager
             }
             return (si);
         }
+
+        public double maxFrequencykHzToShow { get; set; } = 192.0;
+        public double maxFrequencykHz { get; set; } = 192.0;
+
+        public double secsPerFft { get; set; } = 1.0d;
 
         private (double[] audio, int sampleRate) halfWaveRectify((double[] audio, int sampleRate) data)
         {
@@ -182,6 +198,9 @@ namespace BatRecordingManager
             return (result);
         }
 
+        public TimeSpan duration = new TimeSpan();
+        public int SampleRate = 384000;
+
         private (double[] audio, int sampleRate) GetDataSG(LabelledSegment segment, int FFTSize, out int sampleRate,
             double scale = 16000.0d,FilterParams filterParams=null)
         {
@@ -199,6 +218,7 @@ namespace BatRecordingManager
             {
                 var sp = wfr.ToSampleProvider();
                 sampleRate = wfr.WaveFormat.SampleRate;
+                SampleRate = sampleRate;
                 TimeSpan leadin = new TimeSpan();
                 var requestedDuration = segment.EndOffset - segment.StartOffset;
                 if (requestedDuration.TotalSeconds > 15)
@@ -206,6 +226,9 @@ namespace BatRecordingManager
                     leadin = TimeSpan.FromSeconds(((requestedDuration.TotalSeconds - 15.0d) / 2.0d));
                     requestedDuration = TimeSpan.FromSeconds(15.0d);
                 }
+
+                duration = requestedDuration;
+
                 var data = sp.Skip(segment.StartOffset + leadin).Take(requestedDuration);
                 var sampleCount = (int)(requestedDuration.TotalSeconds * sampleRate);
                 float[] faData = new float[FFTSize];
@@ -272,6 +295,70 @@ namespace BatRecordingManager
                 }*/
             }
             return (dataArray, sampleRate);
+        }
+
+        internal double[,] Regen(int FFTSize,int FFTAdvance)
+        {
+            if (segment != null)
+            {
+                
+
+                var data = GetDataSG(segment, FFTSize, out int sampleRate,
+                         filterParams: FilterParams);
+                if (data.audio == null) return null;
+                //if (experimental) data = halfWaveRectify(data);
+                Debug.WriteLine($"gen spectrogram-> data {data.audio.Count()} lasting {data.audio.Count() / (double)sampleRate}s");
+                int maxFrequency = sampleRate / 2;
+                
+                
+
+                var sg = new SpectrogramGenerator(sampleRate,
+                    fftSize: FFTSize,
+                    stepSize: FFTAdvance,
+                    maxFreq: maxFrequency);
+
+                sg.Add(data.audio);
+
+                
+
+                var fts = sg.GetFFTs();
+
+                maxFrequencykHzToShow = maxFrequency / 1000.0d;
+                maxFrequencykHz = (sampleRate / 2.0d) / 1000.0d;
+                secsPerFft = sg.SecPerPx;
+
+                var result = new double[ fts[0].Length,fts.Count];
+
+                minval = double.MaxValue;
+                maxval = double.MinValue;
+
+                for (int l = 0; l < fts.Count; l++)
+                {
+                    for (int n = 0; n < fts[0].Length; n++)
+                    {
+                        fts[l][ n] = 20.0 * Math.Log10(fts[l][ n]);
+                        result[fts[0].Length - n - 1, l] = fts[l][n];
+                        if (fts[l][n] < minval) minval = fts[l][n];
+                        if(fts[l][n] > maxval) maxval = fts[l][n];
+                        
+                    }
+                }
+                rangeval = maxval - minval;
+
+                return (result);
+            }
+            return (null);
+        }
+
+        private double minval = 0.0d;
+        private double maxval = 2.0d;
+        private double rangeval = 2.0d;
+
+        internal void GetRange(out double min, out double max, out double range)
+        {
+            min = minval;
+            max = maxval;
+            range = maxval - minval;
         }
     }
 }

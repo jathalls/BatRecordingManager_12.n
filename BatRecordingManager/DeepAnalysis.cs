@@ -434,10 +434,18 @@ namespace BatRecordingManager
                     var data = sp.Skip(sel.StartOffset).Take(sel.EndOffset - sel.StartOffset);
                     float[] faData = new float[FFTSize];
                     alldata = new List<float>();
-                    int samplesRead;
-                    while ((samplesRead = data.Read(faData, 0, FFTSize)) > 0)
+                    int samplesRead=0;
+                    int n = 0;
+                    try
                     {
-                        alldata.AddRange(faData.Take(samplesRead));
+                        while ((samplesRead = data.Read(faData, 0, FFTSize)) > 0)
+                        {
+                            alldata.AddRange(faData.Take(samplesRead));
+                            n++;
+                        }
+                    }catch(Exception ex)
+                    {
+                        Debug.WriteLine($"Error reading data: {ex.Message}\n\tat buffer {n} of size {samplesRead}");
                     }
                     
                     

@@ -1,0 +1,110 @@
+﻿<Window x:Class="BatRecordingManager.SpectrogramWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BatRecordingManager" 
+        xmlns:sp1="clr-namespace:ScottPlot;assembly=ScottPlot.WPF"
+        mc:Ignorable="d"
+        Title="SpectrogramWindow" Height="450" Width="1500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel>
+            
+            <StackPanel x:Name="sliderPanel"
+                    Orientation="Horizontal"
+                    DockPanel.Dock="Bottom"
+                    >
+                <Slider x:Name="GainSlider"
+                        Maximum="120"
+                        Minimum="24"
+                        SmallChange="12"
+                        LargeChange="12"
+                        Width="400"
+                        Margin="5,0"
+                        Value="96" 
+                        
+                        ValueChanged="GainSlider_ValueChanged" 
+                        TickFrequency="12" 
+                        TickPlacement="BottomRight"/>
+                <TextBox x:Name="GainText"
+                         Width="50"
+                         Margin="5,0"
+                         Text="{Binding ElementName=GainSlider, Path=Value}"/>
+                <Slider x:Name="OffsetSlider"
+                        Maximum="120"
+                        Minimum="0"
+                        Width="400"
+                        Margin="5,0"
+                        Value="60" 
+                        LargeChange="12"
+                        SmallChange="12"
+                        TickFrequency="12"
+                        
+                        ValueChanged="OffsetSlider_ValueChanged"/>
+                <TextBox x:Name="OffsetText"
+                         Width="50"
+                         Margin="5,0"
+                         Text="{Binding ElementName=OffsetSlider, Path=Value}"/>
+                <CheckBox x:Name="SmoothingCheckBox"
+                          IsChecked="True"
+                          Content="Smooth" 
+                          Margin="5,0"
+                          Unchecked="SmoothingCheckBox_Unchecked"
+                          Checked="SmoothingCheckBox_Unchecked" />
+                <ComboBox x:Name="FtSizeListbox" 
+                          SelectedIndex="1" 
+                          
+                          Margin="5,0"
+                          SelectionChanged="FtSizeListbox_SelectionChanged" 
+                          HorizontalContentAlignment="Stretch"
+                         >
+                    <ComboBoxItem Content="2048"/>
+                    <ComboBoxItem Content="1024"/>
+                    <ComboBoxItem Content="512"/>
+                    <ComboBoxItem Content="256"/>
+                    <ComboBoxItem Content="128"/>
+                </ComboBox>
+                <Label Content="FFT Size"/>
+                <ComboBox x:Name="FtAdvanceListbox" 
+                          SelectedIndex="2" 
+                          
+                          Margin="5,0"
+                          SelectionChanged="FtAdvanceListbox_SelectionChanged" 
+                          HorizontalContentAlignment="Stretch"
+                         >
+                    <ComboBoxItem Content="12.5%"/>
+                    <ComboBoxItem Content="25%"/>
+                    <ComboBoxItem Content="50%"/>
+                    <ComboBoxItem Content="75%"/>
+                    <ComboBoxItem Content="100%"/>
+                </ComboBox>
+                <Label Content="FFT Advance"/>
+
+            </StackPanel>
+
+            <sp1:WpfPlot 
+                x:Name="wpfPlot" 
+            
+                />
+        </DockPanel>
+        <StackPanel
+            x:Name="buttonPanel"
+            Grid.Row="1"
+            Orientation="Horizontal">
+            <Button
+                x:Name="closeButton"
+                Content="CLOSE" 
+                Margin="5,0"
+                Style="{StaticResource SimpleButton}"
+                Click="closeButton_Click"
+                />
+
+        </StackPanel>
+    </Grid>
+</Window>

@@ -114,7 +114,7 @@ namespace BatRecordingManager
                     FolderSelected = true;
                     Tools.SetAudacityExportFolder(FolderPath);
                     SessionTag = recordingToAnalyse.RecordingSession.SessionTag;
-                    FileToAnalyse = FolderPath + recordingToAnalyse.RecordingName;
+                    FileToAnalyse = Path.Combine(FolderPath , recordingToAnalyse.RecordingName);
                     ThisRecordingSession = recordingToAnalyse.RecordingSession;
                     ThisGpxHandler = new GpxHandler(FolderPath);
                     //Analyse(FileToAnalyse);
@@ -797,6 +797,10 @@ Are you sure this is correct?", "Append Analysis to current Session", MessageBox
 
         /// <summary>
         ///     returns the SessionTag for the selected folder to analyse
+        ///     FolderPath must be defined and must exist, or a select folder dialog will be presented.
+        ///     Checks the database for a session using that folder and uses that
+        ///     session tag by default, if no such session exists attempts to create a 
+        ///     valid session tag.
         /// </summary>
         /// <returns></returns>
         private string GetSessionTag()
@@ -809,6 +813,18 @@ Are you sure this is correct?", "Append Analysis to current Session", MessageBox
             }
 
             if (WavFileList.IsNullOrEmpty()) GetFileList();
+            string path = Tools.GetPath(WavFileList.FirstOrDefault());
+
+            if (!Directory.Exists(path))
+            {
+                return ("");
+            }
+            string existingSessionTag = DBAccess.GetSessionTagForFolder(path);
+            if (!string.IsNullOrWhiteSpace(existingSessionTag))
+            {
+                return(existingSessionTag);
+            }
+
             if (!WavFileList.IsNullOrEmpty())
                 foreach (var file in WavFileList)
                 {
@@ -822,7 +838,7 @@ Are you sure this is correct?", "Append Analysis to current Session", MessageBox
                     }
                 }
 
-            string path = Tools.GetPath(WavFileList.FirstOrDefault());
+            
 
             if (!string.IsNullOrWhiteSpace(path))
             {

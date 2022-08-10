@@ -25,7 +25,7 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0-windows7.0"
+          "net6.0-windows"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -71,15 +71,11 @@
             "Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[0.3.310801, )"
+              "version": "[0.4.336902, )"
             },
             "Microsoft.NETCore.Platforms": {
               "target": "Package",
-              "version": "[6.0.3, )"
-            },
-            "Microsoft.NETCore.Runtime.CoreCLR": {
-              "target": "Package",
-              "version": "[2.0.8, )"
+              "version": "[6.0.5, )"
             },
             "Microsoft.VisualStudio.Language": {
               "target": "Package",
@@ -115,7 +111,7 @@
             },
             "Shiny.Core": {
               "target": "Package",
-              "version": "[2.5.1, )"
+              "version": "[2.5.5, )"
             },
             "System.Data.DataSetExtensions": {
               "target": "Package",
@@ -127,7 +123,7 @@
             },
             "System.Linq.Dynamic.Core": {
               "target": "Package",
-              "version": "[1.2.18, )"
+              "version": "[1.2.19, )"
             },
             "System.Linq.Expressions": {
               "target": "Package",
@@ -152,7 +148,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -164,7 +161,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.300\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400-preview.22330.6\\RuntimeIdentifierGraph.json"
         }
       }
     }
