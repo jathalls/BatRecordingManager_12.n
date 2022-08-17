@@ -306,8 +306,15 @@ namespace BatRecordingManager
         /// </returns>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // Not implemented
-            return null;
+            TimeSpan result = TimeSpan.FromSeconds(10.0);
+            string strValue = value as String;
+            while(strValue.EndsWith("\""))strValue = strValue.Substring(0,strValue.Length-1);
+            if(double.TryParse(strValue, out double secs))
+            {
+                result=TimeSpan.FromSeconds(secs);
+            }
+
+            return result;
         }
     }
 

@@ -1593,7 +1593,7 @@ namespace BatRecordingManager
             return (int)Math.Ceiling(overlap.TotalMinutes);
         }
 
-        internal static string SelectWavFileFolder(string initialDirectory)
+        internal static string SelectWavFileFolder(string initialDirectory,bool selectFile=false)
         {
             string FolderPath = "";
 
@@ -1605,17 +1605,21 @@ namespace BatRecordingManager
             //using (System.Windows.Forms.OpenFileDialog dialog = new OpenFileDialog())
             //using(Ookii.Dialogs.Wpf.VistaOpenFileDialog dialog=new VistaOpenFileDialog())
             //{
+            string title = "Select Folder or WAV file";
+            if (selectFile) title = "Select .WAV file to play";
+            string fileName = "Select Folder";
+            if (selectFile) fileName = "*.wav";
             using (var dialog = new OpenFileDialog
             {
                 DefaultExt = ".wav",
                 Filter = "Text files (*.txt)|*.txt|Wav files (*.wav)|*.wav|All Files (*.*)|*.*",
                 FilterIndex = 3,
                 InitialDirectory = initialDirectory,
-                Title = "Select Folder or WAV file",
+                Title = title,
                 ValidateNames = false,
-                CheckFileExists = false,
+                CheckFileExists = selectFile,
                 CheckPathExists = true,
-                FileName = "Select Folder"
+                FileName = fileName
             })
             {
                 //dialog.Description = "Select the folder containing the .wav and descriptive text files";
@@ -1629,8 +1633,10 @@ namespace BatRecordingManager
                 //FolderPath = Path.GetDirectoryName(dialog.FileName);
                 else
                     return null;
-            }
 
+                if (selectFile) return (dialog.FileName);
+            }
+            
             return (FolderPath);
         }
 

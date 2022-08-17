@@ -3,6 +3,7 @@ using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +25,23 @@ namespace BatRecordingManager
     {
         public SpectrogramWindow()
         {
+            this.Loaded += SpectrogramWindow_Loaded;
             InitializeComponent();
+
+        }
+        /// <summary>
+        /// called when the window is loaded to permit additional initialisations
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void SpectrogramWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            var colorMaps=ScottPlot.Drawing.Colormap.GetColormapNames();
+            ColourComboBox.ItemsSource= colorMaps;
+            ColourComboBox.SelectedItem = "GrayscaleR";
+            
+            
         }
 
         private static SpectrogramWindow Sgi { get; set; } = null;
@@ -94,7 +111,7 @@ namespace BatRecordingManager
             
             if (data == null) return;
             
-
+            
 
             wpfPlot.Plot.Clear();
             //heatMap = wpfPlot.Plot.AddHeatmap(data,colormap:ScottPlot.Drawing.Colormap.GrayscaleR);
@@ -112,7 +129,7 @@ namespace BatRecordingManager
             //{
             //    plt.AddHorizontalLine(l);
             //}
-
+            
 
             plt.YAxis.IsVisible = false;
             plt.XAxis.IsVisible = false;
@@ -144,6 +161,7 @@ namespace BatRecordingManager
             TimeAxis.IsVisible = true;
 
             var cb = plt.AddColorbar(heatMap);
+            
 
             plt.Grid(onTop: true);
             heatMap.Smooth = SmoothingCheckBox.IsChecked ?? false;
@@ -249,6 +267,26 @@ namespace BatRecordingManager
                 if (data != null && heatMap!=null)
                 {
                     Update();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Responds to a change in the selected colour scheme
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ColourComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string selection = ColourComboBox.SelectedItem as string;
+            var colour = ScottPlot.Drawing.Colormap.GetColormapByName(selection);
+            if(colour != null)
+            {
+                if (heatMap != null)
+                {
+                    heatMap.Update(data,colormap: colour);
+                    wpfPlot.Plot.AddColorbar(heatMap);
+                    wpfPlot.Refresh();
                 }
             }
         }

@@ -25,6 +25,11 @@
                 x:Name="PlayButtonsPanel"
                 Orientation="Horizontal">
                 <Button
+                    x:Name="FileButton"
+                    Style="{StaticResource SimpleButton}"
+                    Visibility="Visible"
+                    Content="File" Click="FileButton_Click"/>
+                <Button
                     x:Name="RewindButton"
                     Style="{StaticResource SimpleButton}"
                     Visibility="Hidden"
@@ -74,6 +79,11 @@
                     x:Name="TunedButton"
                     Style="{StaticResource SimpleRadioButton}"
                     Content="Tuned" Margin="0,0,5,0" />
+                <RadioButton
+                    x:Name="BroadbandButton"
+                    Style="{StaticResource SimpleRadioButton}"
+                    Content="BB"
+                    Margin="0,0,5,0"/>
 
             </StackPanel>
             <Slider
@@ -117,8 +127,8 @@
                                     IsReadOnly="True" />
                 <DataGridTextColumn Binding="{Binding startOffset, Converter={StaticResource ConvertTimeSpan}}"
                                     Width="100" ClipboardContentBinding="{x:Null}" Header="Start" IsReadOnly="True" />
-                <DataGridTextColumn Binding="{Binding playLength, Converter={StaticResource ConvertTimeSpan}}"
-                                    Width="100" ClipboardContentBinding="{x:Null}" Header="Duration" IsReadOnly="True" />
+                <DataGridTextColumn Binding="{Binding playLength,Mode=TwoWay, Converter={StaticResource ConvertTimeSpan}}"
+                                    Width="100" ClipboardContentBinding="{x:Null}" Header="Duration" IsReadOnly="False" />
                 <DataGridTextColumn Binding="{Binding label}" ClipboardContentBinding="{x:Null}" Header="Comments"
                                     IsReadOnly="True" />
             </DataGrid.Columns>

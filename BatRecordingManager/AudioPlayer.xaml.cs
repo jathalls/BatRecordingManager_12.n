@@ -35,7 +35,7 @@ namespace BatRecordingManager
     /// </summary>
     public partial class AudioPlayer : Window
     {
-        private NaudioWrapper _wrapper;
+        private NaudioWrapper2 _wrapper;
 
         /// <summary>
         ///     Constructor for the AudioPlayer
@@ -151,21 +151,22 @@ namespace BatRecordingManager
             {
                 filename = Tools.GetFileToWriteTo("", ".wav");
             }
-            if (PlayButton.Content as string == "PLAY")
+            if (PlayButton.Content as string == "PLAY" || (sender as Button).Content as String == "SAVE")
             {
                 PlayListItem itemToPlay = GetItemToPlay();
 
                 if (itemToPlay != null)
                 {
-                    PlayItem(itemToPlay, looped, filename);
                     if (string.IsNullOrWhiteSpace(filename))
                     {
                         PlayButton.Content = "STOP";
                     }
                     else
                     {
-                        StopPlaying();
+                        StopPlaying(); // we are going to save, so force a stop incase sometning is already playing
                     }
+                    PlayItem(itemToPlay, looped, filename);
+                    
                 }
             }
             else
@@ -204,6 +205,7 @@ namespace BatRecordingManager
 
         private void PlayItem(PlayListItem itemToPlay, bool playLooped, string filename)
         {
+            /*
             _wrapper = new NaudioWrapper { Frequency = (decimal)Frequency };
             _wrapper.e_Stopped += Wrapper_Stopped;
             if (!TunedButton.IsChecked ?? false)
@@ -219,8 +221,27 @@ namespace BatRecordingManager
             else
             {
                 _wrapper.Heterodyne(itemToPlay, filename);
+            }*/
+            if (_wrapper == null)
+            {
+                _wrapper = new NaudioWrapper2();
+                _wrapper.e_Stopped += Wrapper_Stopped;
+                _wrapper.currentSpeed = 0.0m;
+                _wrapper.Frequency = (decimal)Frequency;
+                if (BroadbandButton.IsChecked ?? false) _wrapper.currentSpeed = -1.0m;
+                else if (TenthButton.IsChecked ?? false) _wrapper.currentSpeed = 0.1m;
+                else if (FifthButton.IsChecked ?? false) _wrapper.currentSpeed = 0.2m;
+                else if (TwentiethButton.IsChecked ?? false) _wrapper.currentSpeed = 0.05m;
+                else if (FullSpeedButton.IsChecked ?? false) _wrapper.currentSpeed = 1.0m;
+                _wrapper.playableItem = itemToPlay;
+                _wrapper.PlayLooped = playLooped;
+                _wrapper.Play(filename);
             }
+
+
         }
+
+       
 
         private void Wrapper_Stopped(object sender, EventArgs e)
         {
@@ -293,9 +314,28 @@ namespace BatRecordingManager
             }
         }
 
+
         #endregion
 
-
+        /// <summary>
+        /// Produces an Open file dialog to select any wav file to be played.  The details are
+        /// prseented as usual.  Eventually there wil be an option to only play a portion of the file.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FileButton_Click(object sender, RoutedEventArgs e)
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string file=Tools.SelectWavFileFolder(path,selectFile:true);
+            if (!string.IsNullOrWhiteSpace(file))
+            {
+                if (File.Exists(file))
+                {
+                    var pli = PlayListItem.Create(file);
+                    if (pli != null) AddToPlayList(pli);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -344,6 +384,17 @@ namespace BatRecordingManager
 
 
             return result;
+        }
+
+        public static PlayListItem Create(string filename)
+        {
+            WaveFileReader wfr=new WaveFileReader(filename);
+
+            TimeSpan defLength = TimeSpan.FromSeconds(10);
+
+            if(wfr.TotalTime<defLength)defLength= wfr.TotalTime;
+
+            return(PlayListItem.Create(filename,new TimeSpan(),defLength,filename));
         }
     }
 }

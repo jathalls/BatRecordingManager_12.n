@@ -205,6 +205,13 @@ namespace BatRecordingManager
             }
         }
 
+        /// <summary>
+        /// Plays playListItem at a specified spee
+        /// </summary>
+        /// <param name="itemToPlay"></param>
+        /// <param name="speedFactor"></param>
+        /// <param name="playInLoop"></param>
+        /// <param name="filename"></param>
         public void Play(PlayListItem itemToPlay, decimal speedFactor, bool playInLoop, string filename = "")
         {
             CleanUp();
@@ -396,8 +403,13 @@ namespace BatRecordingManager
             if (_doLoop)
             {
                 if (currentSpeed == 0.0m)
+                {
+                    
                     Heterodyne(currentItem);
+                }
                 else
+                    //System.Media.SystemSounds.Exclamation.Play();
+                   
                     Play(currentItem, currentSpeed, _doLoop);
             }
             else
