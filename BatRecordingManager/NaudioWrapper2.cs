@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualBasic.Devices;
 using System.Runtime.CompilerServices;
 using NAudio.Wave.SampleProviders;
+using System.Windows.Forms;
 
 namespace BatRecordingManager
 {
@@ -37,20 +38,19 @@ namespace BatRecordingManager
 	{
 		private readonly object _stoppedEventLock = new object();
 
-		private WaveFormatConversionProvider _converter;
+
 		private bool _doLoop;
 
 		private bool _isDisposing;
 
 		private WaveOut _player;
-		private WaveFileReader[] _readerArray = new WaveFileReader[2];
-		private MediaFoundationResampler[] _resamplerArray = new MediaFoundationResampler[2];
+
 		private EventHandler _stoppedEvent;
-		private AudioFileReader _wave;
+
 		private int BufferToUse = 0;
 		private string filename = "";
 		private bool doSave = false;
-		
+
 
 		private PlayListItem currentItem { get; set; }
 
@@ -94,7 +94,7 @@ namespace BatRecordingManager
 						_player = null;
 					}
 				}
-				
+
 
 
 				CleanUp();
@@ -125,124 +125,148 @@ namespace BatRecordingManager
 				_player = null;
 			}
 
-			if (_readerArray != null)
+
+
+			if (afr != null)
+			{
+				afr.Dispose();
+				afr = null;
+			}
+			if (sampleProvider != null)
 			{
 
-				if (_readerArray[0] != null && !_doLoop)
-				{
-					_readerArray[0].Dispose();
-					_readerArray[0] = null;
-				}
+				sampleProvider = null;
+			}
 
-				if (_readerArray[1] != null && !_doLoop)
-				{
-					_readerArray[1].Dispose();
-					_readerArray[1] = null;
-				}
+			if (bufferedWaveProvider != null)
+			{
+				bufferedWaveProvider.ClearBuffer();
+				bufferedWaveProvider = null;
+			}
 
-
+			if (_timer != null)
+			{
+				_timer.Stop();
+				_timer.Dispose();
+				_timer = null;
 			}
 
 
 
-			if (_converter != null)
-			{
-				_converter.Dispose();
-				_converter = null;
-			}
 
-			if (_wave != null)
-			{
-				_wave.Dispose();
-				_wave = null;
-			}
-
-			if (_resamplerArray != null && _readerArray.Length > 0)
-			{
-				_resamplerArray[0]?.Dispose();
-				_resamplerArray[0] = null;
-
-				_resamplerArray[1]?.Dispose();
-				_resamplerArray[1] = null;
-			}
-
-			
 		}
 
-		/// <summary>
-		/// Plays playListItem at a specified speed.
-		/// If speed is 0.0m then use broadband mode.
-		/// If speed is negative use Heterodyne mode
-		/// </summary>
-		/// 
-		public void Play(string filename = "")
+
+
+		public void PlayContinuous()
 		{
+			if (playableItem == null) return;
+
 			CleanUp();
 
-
-			this.filename = filename;
-			if (!string.IsNullOrWhiteSpace(filename) && Directory.Exists(Path.GetDirectoryName(filename)))
+			if (playableItem.playLength.TotalSeconds <= 2.0d)
 			{
-				_doLoop = false;
-				doSave = true;
+				// process and play the entire item in one go with no breaks
+
+				GetBuffer2();
+				var reader = ProcessBuffer(playableItem.playLength.TotalSeconds);
+				var player = new WaveOut();
+
+				_player = new WaveOut();
+				if (_player == null)
+				{
+					CleanUp();
+					OnStopped(EventArgs.Empty);
+					return;
+				}
+
+
+				_player.PlaybackStopped += Player_PlaybackStopped;
+				_player.Init(reader);
+				_player.Play();
+
 			}
 			else
 			{
-				doSave = false;
+				// Play using a BufferedWaveProvider to give continuous playback with the ability to
+				// adjust some parameters, but not the output format
+
+				GetBuffer2(); // initialises the AudioFileReader afr and positions it at the start of the playable section
+				var reader = ProcessBuffer(2.0d);
+				if (reader == null) return;
+
+				bufferedWaveProvider = new BufferedWaveProvider(reader.WaveFormat);
+				bufferedWaveProvider.BufferDuration = TimeSpan.FromSeconds(2.5);
+				Byte[] buffer = new byte[reader.Length]; // which is 2 seconds from call to ProcessBuffer
+				int Read = 0;
+				Read = reader.Read(buffer, 0, buffer.Length);
+				bufferedWaveProvider.AddSamples(buffer, 0, Read);
+				_player = new WaveOut();
+				if (_player == null)
+				{
+					CleanUp();
+					OnStopped(EventArgs.Empty);
+					return;
+				}
+
+				_timer = new Timer();
+				_timer.Interval = (int)(1000);
+				_timer.Tick += _timer_Tick;
+
+				Debug.WriteLine($"BWP has capacity {bufferedWaveProvider.BufferDuration}, filled to {bufferedWaveProvider.BufferedDuration}");
+
+				_player.PlaybackStopped += Player_PlaybackStopped;
+				_player.Init(bufferedWaveProvider);
+				_player.Play();
+
+				_timer.Start();
+
 			}
-
-			if (playableItem == null)
-			{
-				OnStopped(EventArgs.Empty);
-				return;
-			}
-
-			if (_readerArray == null) _readerArray = new WaveFileReader[2];
-
-
-			BufferToUse = 0;
-
-			secondsPlayed = 0;
-
-
-
-			if (doSave)
-			{
-				SaveProcessedDataToFile(filename,playableItem);
-				return;
-
-			}
-
-			_readerArray[BufferToUse] = GetBuffer(playableItem);
-
-
-			_readerArray[BufferToUse] = ProcessBuffer(playableItem, currentSpeed);
-
-			nextBufferReady = false;
-
-			_player = new WaveOut();
-			if (_player == null)
-			{
-				CleanUp();
-				OnStopped(EventArgs.Empty);
-				return;
-			}
-
-
-			_player.PlaybackStopped += Player_PlaybackStopped;
-			_player.Init(_readerArray[BufferToUse]);
-			_player.Play();
-
-
-			BufferToUse++;
-			if (BufferToUse > 1) BufferToUse = 0;
-
-			_readerArray[BufferToUse] = GetBuffer(playableItem);
-			_readerArray[BufferToUse] = ProcessBuffer(playableItem, currentSpeed);
-
-			nextBufferReady = true;
-
 		}
+
+		private TimeSpan readerChunkDuration = TimeSpan.FromSeconds(2.0d);
+
+		private void _timer_Tick(object sender, EventArgs e)
+		{
+			if (bufferedWaveProvider != null)
+			{
+				Debug.WriteLine($"Buffer contains {bufferedWaveProvider.BufferedDuration.TotalSeconds}seconds");
+
+
+				if (bufferedWaveProvider.BufferedDuration.TotalMilliseconds < 1.0d)
+				{
+					Stop();
+					return;
+				}
+
+				TimeSpan availableSpace = bufferedWaveProvider.BufferDuration - bufferedWaveProvider.BufferedDuration;
+
+				var reader = ProcessBuffer(availableSpace.TotalSeconds);
+				if (reader == null || !reader.HasData(1))
+				{
+					return;
+
+				}
+
+				Byte[] buffer = new byte[reader.Length];
+				int Read = 0;
+				Read = reader.Read(buffer, 0, buffer.Length);
+				if (Read > 0)
+				{
+					bufferedWaveProvider.AddSamples(buffer, 0, Read);
+				}
+				else
+				{
+					return; // and wait for the bufferedwaveprovider to be empty
+				}
+
+
+			}
+		}
+
+		Timer _timer = null;
+
+		private BufferedWaveProvider bufferedWaveProvider = null;
 
 		/// <summary>
 		/// Loops filling and processing buffers and writing the result to the named file until there is no further data
@@ -252,175 +276,103 @@ namespace BatRecordingManager
 		/// <exception cref="NotImplementedException"></exception>
 		private void SaveProcessedDataToFile(string filename, PlayListItem itemToPlay)
 		{
-			decimal speed = currentSpeed; // since it must not change once started
-			WaveFileReader reader = GetBuffer(playableItem);
-			reader = ProcessBuffer(reader, itemToPlay, speed);
+
+			GetBuffer2();
+			var reader = ProcessBuffer(itemToPlay.playLength.TotalSeconds);
 			using (WaveFileWriter _writer = new WaveFileWriter(filename, reader.WaveFormat))
 			{
 
 				byte[] buffer = new byte[1024];
-				while (reader != null)
+				if (reader != null)
 				{
 
 					int read = -1;
-					while ((read =reader.Read(buffer, 0, buffer.Length)) > 0)
+					while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
 					{
 						_writer.Write(buffer, 0, read);
 					}
 					_writer.Flush();
-					reader=GetBuffer(playableItem);
-					reader = ProcessBuffer(reader, playableItem, speed);
+
 
 				}
 				_writer.Close();
 			}
 		}
-		
+
 
 		public PlayListItem playableItem = null;
 
 		/// <summary>
-		/// Given a WavFileReader, and a speed setting, processes the data from the reader and returns a 
-		/// new reader that will access the modified data.
-		/// The speed may be:-
-		/// a positive fraction - in which case that will be the speed reduction for replay.  i.e. a value
-		///		of 0.1 will replay the buffer at one tenth speed
-		///	a value of zero - in which the buffer will be heterodyned with a sine wave at _frequency and then
-		///		low pass filtered and returned at a lower sample rate.
-		///	a negative value - in which case the file will be re-sampled at  10kHz, then low pass filtered and
-		///		returned at a lower sample rate.  This is the same as a broad band bat detector, or multiple
-		///		tuned bat detectors tuned at 10kHz intervals.  The 10kHz rate will be adjusted by upt to 5kHz 
-		///		(+/-2.5kHz) to allow tuning to avaid nulls or provide a better listening experience.  The offset will
-		///		be derived from _frequency which is remotely set from the frequency slider.
+		/// Applies the process buffer according to the currentspeed, Frequency etc properties
+		/// using the AudioFileReader afr which is pre-positioned at the start.  It will process
+		/// and return as a reader a block of data no bigger than the duration parameter in seconds.
 		/// </summary>
-		/// <param name="itemToPlay"></param>
-		/// <param name="currentSpeed"></param>
 		/// <returns></returns>
-		/// <exception cref="NotImplementedException"></exception>
-		private WaveFileReader ProcessBuffer(PlayListItem itemToPlay, decimal currentSpeed)
+		private WaveFileReader ProcessBuffer(double duration)
 		{
-			if (itemToPlay == null) return (null);
-			if (BufferToUse < 0 || BufferToUse > 1) return (null);
-			if (_readerArray == null || _readerArray[BufferToUse] == null) return (null);
-			var reader = _readerArray[BufferToUse];
-			return (ProcessBuffer(reader, itemToPlay, currentSpeed));
-		}
+			//if(reader == null) return null;
+			if (afr == null || sampleProvider == null) return null;
 
-		private WaveFileReader ProcessBuffer(WaveFileReader reader,PlayListItem itemToPlay,decimal currentSpeed)
-		{ 
-			if(reader == null) return null;
-
-			Debug.WriteLine($"Process buffer {BufferToUse} at {reader.WaveFormat.SampleRate} for speed {currentSpeed}");
-
+			if (currentSpeed > 0.0m)
+			{
+				duration = duration * (double)currentSpeed;
+			}
 
 			WaveFileReader result = null;
-			if (currentSpeed == 0.0m) {
-				result = heterodyne(reader);
-				Debug.WriteLine($"Heterodyne {Frequency}kHz at {result.WaveFormat.SampleRate}");
+			readerChunkDuration = TimeSpan.FromSeconds(duration);
+			if (currentSpeed == 0.0m)
+			{
+				result = heterodyne(duration);
+				//Debug.WriteLine($"Heterodyne {Frequency}kHz at {result.WaveFormat.SampleRate}");
 			}
-			else if (currentSpeed < 0.0m) {
-				result = broadband(reader);
-				Debug.WriteLine($"Broadband out at {result.WaveFormat.SampleRate}");
+			else if (currentSpeed < 0.0m)
+			{
+				result = heterodyne(duration);
+				//result = broadband(reader);
+				//Debug.WriteLine($"Broadband out at {result.WaveFormat.SampleRate}");
 			}
 
 			else
 			{
-				var sr = reader.WaveFormat.SampleRate;
+				var sr = sampleProvider.WaveFormat.SampleRate;
 				WaveFormat wf = WaveFormat.CreateIeeeFloatWaveFormat((int)(sr * currentSpeed),
-					reader.WaveFormat.Channels);
+					sampleProvider.WaveFormat.Channels);
 				var ms = new MemoryStream();
-				if(wf!=null && ms != null)
+				if (wf != null && ms != null)
 				{
 					using (var wfw = new WaveFileWriter(new IgnoreDisposeStream(ms), wf))
 					{
 						if (wfw != null)
 						{
-							var floats=new float[reader.SampleCount];
+							var floats = new float[(int)(sr * duration)];
 							int read = -1;
-							
-							while ((read = reader.ToSampleProvider().Read(floats, 0, floats.Length))>0)
+
+							read = sampleProvider.Read(floats, 0, floats.Length);
+							if (read > 0)
 							{
 								wfw.WriteSamples(floats, 0, read);
 								wfw.Flush();
+
 							}
+							else
+							{
+								return (null);
+							}
+							ms.Position = 0;
+							result = new WaveFileReader(ms);
+							//Debug.WriteLine($"Processed out at {result.WaveFormat.SampleRate}");
+							readerChunkDuration = result.TotalTime;
 						}
 					}
-					ms.Position = 0;
-					result = new WaveFileReader(ms);
-					Debug.WriteLine($"Processed out at {result.WaveFormat.SampleRate}");
+
 				}
 			}
 			return (result);
 		}
 
-        /// <summary>
-		/// Similar in concept to heterodyne, but actually resamples the audio contained in the reader
-		/// at 10kHz+- a fiddle factor derived from Frequency.  The low pass filter and return in the guise of a new
-        ///    WaveFileReader.
-		/// </summary>
-		/// <param name="reader"></param>
-		/// <returns></returns>
-		/// 
-        ///    
-        private WaveFileReader broadband(WaveFileReader reader)
-		{
-			if (reader == null) return null;
-			WaveFileReader result = null;
-
-			int targetSampleRate = (int)(Frequency * 1000) / 5;
-			int resampleGap = (int)(reader.WaveFormat.SampleRate / targetSampleRate);  // @384ksps => 38 SR=384000/38=10105
-			int newSampleRate = (int)(reader.WaveFormat.SampleRate / resampleGap);
-			Debug.WriteLine($"Broadband target rate={targetSampleRate}, resampleGap={resampleGap}, new SR={newSampleRate}");
-
-			var ms = new MemoryStream();
-
-            var outFormat = WaveFormat.CreateIeeeFloatWaveFormat(newSampleRate,
-                            reader.WaveFormat.Channels);
 
 
-			//var resampler = new MediaFoundationResampler(reader, outFormat);
-			//var resampler = new WdlResamplingSampleProvider(reader.ToSampleProvider(), newSampleRate);
-			
 
-            using (var wfw = new WaveFileWriter(new IgnoreDisposeStream(ms), outFormat))
-            {
-                if (wfw == null) return (null);
-				
-               
-
-                var floats = new float[reader.WaveFormat.SampleRate];
-				var resampled = new float[newSampleRate];
-                int read = -1;
-                var filter = BiQuadFilter.LowPassFilter(newSampleRate, 5000, 2.0f);
-
-                while ((read = reader.ToSampleProvider().Read(floats, 0, floats.Length)) > 0)
-                {
-					int resampledPos = 0;
-					for(int i = 0; i < read; i += resampleGap)
-					{
-						if (resampledPos < resampled.Length)
-						{
-							resampled[resampledPos++] = filter.Transform(floats[i]);
-						}
-					}
-
-                    //for (var i = 0; i < read; i++)
-                    //{
-                    //    floats[i] = filter.Transform(floats[i]);
-                    //}
-                    wfw.WriteSamples(resampled, 0,resampledPos );
-                    wfw.Flush();
-                }
-                ms.Position = 0;
-
-
-                result = new WaveFileReader(ms);
-				
-
-            }
-
-            return (result);
-		}
 
 		/// <summary>
 		/// given an itemToPly and with a valid WaveFileReader in _readerArray[BufferToUse] the
@@ -432,34 +384,37 @@ namespace BatRecordingManager
 		/// <param name="reader">WaveFileReader from which to take audio data</param>
 		/// <returns></returns>
 		/// 
-		private WaveFileReader heterodyne(WaveFileReader reader)
+		private WaveFileReader heterodyne(double duration)
 		{
 			WaveFileReader result = null;
-			if (reader == null) return (null);
-			
+			if (sampleProvider == null) return (null);
+
+			//Debug.WriteLine($"afr position={afr.Position} out of {afr.Length} = {(afr.Position*100)/afr.Length}%");
 
 			var ms = new MemoryStream();
-			using (var wfw = new WaveFileWriter(new IgnoreDisposeStream(ms), reader.WaveFormat))
+			using (var wfw = new WaveFileWriter(new IgnoreDisposeStream(ms), sampleProvider.WaveFormat))
 			{
 				if (wfw == null) return (null);
-				var sineBuffer = new float[reader.SampleCount];
-				sineBuffer = Fill(sineBuffer, Frequency * 1000);
+				var sineBuffer = new float[(int)(sampleProvider.WaveFormat.SampleRate * duration)];
+				sineBuffer = Fill(sineBuffer, Frequency * 1000, sampleProvider.WaveFormat.SampleRate);
 
-				var floats= new float[reader.SampleCount];
+				var floats = new float[(int)(sampleProvider.WaveFormat.SampleRate * duration)];
 				int read = -1;
 				var filter = BiQuadFilter.LowPassFilter(wfw.WaveFormat.SampleRate, 5000, 2.0f);
 
-				while ((read = reader.ToSampleProvider().Read(floats, 0, floats.Length)) > 0)
-				{
-					for(var i = 0; i < read; i++)
+				read = sampleProvider.Read(floats, 0, floats.Length);
+				if (read > 0) {
+					for (var i = 0; i < read; i++)
 					{
 						floats[i] = filter.Transform(floats[i] * sineBuffer[i]);
 					}
 					wfw.WriteSamples(floats, 0, read);
 					wfw.Flush();
+
+					//secondsRead += read / sampleProvider.WaveFormat.SampleRate;
+					ms.Position = 0;
+					result = new WaveFileReader(ms);
 				}
-				ms.Position = 0;
-				result=new WaveFileReader(ms);
 
 			}
 
@@ -467,113 +422,83 @@ namespace BatRecordingManager
 			return (result);
 		}
 
-        /// <summary>
-        ///    
-        /// </summary>
-        /// <param name="sineBuffer"></param>
-        /// <param name="frequency"></param>
-        /// <returns></returns>
-        private float[] Fill(float[] sineBuffer, decimal frequency)
-        {
-            for (var i = 0; i < sineBuffer.Length; i++)
-                sineBuffer[i] = (float)Math.Sin(2.0d * Math.PI * i * (double)frequency / sineBuffer.Length);
-            return sineBuffer;
-        }
-
-        private int secondsPlayed = 0;
-
 		/// <summary>
-		/// Uses the itemToPlay and locally stored information to generate a WavFileReader which will
-		/// return a data stream from the specified file, with a duration not exceeding a fixed buffer size
-		/// that will be processed and played.  The data stream may be less than the 'normal' size if it is the last 
-		/// buffer full in the file.  If the end of the file has already been reached, then the function returns a null.
+		///    
 		/// </summary>
-		/// <param name="itemToPlay"></param>
+		/// <param name="sineBuffer"></param>
+		/// <param name="frequency"></param>
 		/// <returns></returns>
-		/// <exception cref="NotImplementedException"></exception>
-		private WaveFileReader GetBuffer(PlayListItem itemToPlay,[CallerMemberName] string caller = null, [CallerLineNumber] int linenumber = 0)
+		private float[] Fill(float[] sineBuffer, decimal frequency, int sampleRate)
 		{
-			WaveFileReader result = null;
-			MemoryStream ms = null;
-
-            if (itemToPlay == null) return null;
-            if (string.IsNullOrWhiteSpace(itemToPlay.filename)) return null;
-            if (!File.Exists(itemToPlay.filename) || (new FileInfo(itemToPlay.filename).Length <= 0L)) return null;
-			int startSecs = (int)itemToPlay.startOffset.TotalSeconds + secondsPlayed;
-			using (var afr = new AudioFileReader(itemToPlay.filename))
+			if (currentSpeed < 0.0m) // broadband
 			{
-				if (afr != null)
+				int targetSampleRate = (int)((Frequency * 1000.0m) / 5.0m);
+				int resampleGap = (int)(sampleRate / targetSampleRate);  // @384ksps => 38 SR=384000/38=10105
+
+				for (int i = 0; i < sineBuffer.Length; i++)
 				{
-					afr.Skip((int)startSecs);
+					sineBuffer[i] = 0.0f;
+					if (i % resampleGap == 0) sineBuffer[i] = 50.0f;
+				}
 
-					if (secondsPlayed >= itemToPlay.playLength.TotalSeconds)
-					{
-						return null; // we have reached the end of the file
-					}
-					secondsPlayed++;
-
-					var buffer = afr.Take(TimeSpan.FromSeconds(1));
-					var read = -1;
-					ms = new MemoryStream();
-					using (var wfw = new WaveFileWriter(new IgnoreDisposeStream(ms), buffer.WaveFormat))
-					{
-						var floats=new float[buffer.WaveFormat.SampleRate];
-						if ((read=buffer.Read(floats, 0, floats.Length)) > 0)
-						{
-							wfw.WriteSamples(floats, 0, read);
-							wfw.Flush();
-						}
-						else
-						{
-							return null;
-						}
-					}
-
-
+			}
+			else
+			{   // tuned
+				for (var i = 0; i < sineBuffer.Length; i++)
+				{
+					sineBuffer[i] = 5.0f*(float)Math.Sin(2.0d * Math.PI * i * (double)frequency / sampleRate);
+					//sineBuffer[i] = 10.0f * (float)Math.Sin(2.0d * Math.PI * i * (double)frequency );
 				}
 			}
-
-			if (ms != null)
-			{
-				ms.Position = 0;
-				result = new WaveFileReader(ms);
-				Debug.WriteLine($"    From {caller} at line {linenumber}");
-				Debug.WriteLine($"Filled buffer from {TimeSpan.FromSeconds(startSecs)} at rate {result.WaveFormat.SampleRate} of {result.TotalTime}");
-			}
-
-
-            return	result;
+			return sineBuffer;
 		}
 
-		private bool nextBufferReady = true;
 
-		private void Player_PlaybackStopped(object sender,EventArgs e)
+
+		private AudioFileReader afr = null;
+
+		private ISampleProvider sampleProvider = null;
+
+		/// <summary>
+		/// Called once to prep and position the audioflereader and its associated sampleprovider
+		/// </summary>
+		private void GetBuffer2()
 		{
-			if (nextBufferReady && playableItem!=null)
-			{
-				nextBufferReady = false;
-				if (_readerArray[BufferToUse] == null)
-				{
-					if (PlayLooped)
-					{
-						Play();
-						return;
-					}
-					else
-					{
-						PlayEnded();
-						return;
-					}
-				}
-				_player.Init(_readerArray[BufferToUse]);
-				_player.Play();
 
-				if (BufferToUse == 0) BufferToUse = 1;
-				else BufferToUse = 0;
-				_readerArray[BufferToUse] = GetBuffer(playableItem);
-				_readerArray[BufferToUse] = ProcessBuffer(playableItem, currentSpeed);
-				nextBufferReady = true;
+
+			if (playableItem == null) return;
+			if (string.IsNullOrWhiteSpace(playableItem.filename)) return;
+			if (!File.Exists(playableItem.filename) || (new FileInfo(playableItem.filename).Length <= 0L)) return;
+
+			if (afr == null)
+			{
+				afr = new AudioFileReader(playableItem.filename);
+				Debug.WriteLine($"new afr position={afr.Position}bytes out of {afr.Length}bytes sample={afr.WaveFormat.AverageBytesPerSecond}");
+				sampleProvider = afr.Skip(playableItem.startOffset).Take(playableItem.playLength);
 			}
+
+		}
+
+
+
+
+
+		private void Player_PlaybackStopped(object sender, EventArgs e)
+		{
+
+			if (PlayLooped)
+			{
+				CleanUp();
+				PlayContinuous();
+				return;
+			}
+			else
+			{
+				PlayEnded();
+				return;
+			}
+
+
 
 		}
 

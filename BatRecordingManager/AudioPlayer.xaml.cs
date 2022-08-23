@@ -42,6 +42,7 @@ namespace BatRecordingManager
         /// </summary>
         public AudioPlayer()
         {
+            Loaded += AudioPlayer_Loaded;
             InitializeComponent();
             DataContext = this;
 
@@ -49,6 +50,13 @@ namespace BatRecordingManager
             SetButtonVisibility();
             //PlayListItem pli = PlayListItem.Create(@"X:\BatRecordings\2018\Knebworth-KNB18-2_20180816\KNB18-2p_20180816\KNB18-2p_20180816_212555.wav", TimeSpan.FromSeconds(218), TimeSpan.FromSeconds(8), "Comment line");
             //PlayList.Add(pli);
+            
+        }
+
+        private void AudioPlayer_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.BringIntoView();
+            this.Focus();
         }
 
 
@@ -127,6 +135,8 @@ namespace BatRecordingManager
         {
             var pli = PlayListItem.Create(filename, start, duration, label);
             if (pli != null) return AddToPlayList(pli);
+            this.BringIntoView();
+            this.Focus();
             return false;
         }
 
@@ -140,6 +150,8 @@ namespace BatRecordingManager
             if (pli == null) return false;
             PlayList.Add(pli);
             SetButtonVisibility();
+            this.BringIntoView();
+            this.Focus();
             return true;
         }
 
@@ -205,23 +217,7 @@ namespace BatRecordingManager
 
         private void PlayItem(PlayListItem itemToPlay, bool playLooped, string filename)
         {
-            /*
-            _wrapper = new NaudioWrapper { Frequency = (decimal)Frequency };
-            _wrapper.e_Stopped += Wrapper_Stopped;
-            if (!TunedButton.IsChecked ?? false)
-            {
-                var rate = 1.0m;
-
-                if (TenthButton.IsChecked ?? false) rate = 0.1m;
-                if (FifthButton.IsChecked ?? false) rate = 0.2m;
-                if (TwentiethButton.IsChecked ?? false) rate = 0.05m;
-
-                _wrapper.Play(itemToPlay, rate, playLooped, filename);
-            }
-            else
-            {
-                _wrapper.Heterodyne(itemToPlay, filename);
-            }*/
+           
             if (_wrapper == null)
             {
                 _wrapper = new NaudioWrapper2();
@@ -235,7 +231,8 @@ namespace BatRecordingManager
                 else if (FullSpeedButton.IsChecked ?? false) _wrapper.currentSpeed = 1.0m;
                 _wrapper.playableItem = itemToPlay;
                 _wrapper.PlayLooped = playLooped;
-                _wrapper.Play(filename);
+                _wrapper.PlayContinuous();
+               // _wrapper.Play(filename);
             }
 
 
