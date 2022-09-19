@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tk="clr-namespace:UniversalToolkit;assembly=UniversalToolkit"
+        xmlns:avcl="http://schemas.AvalonControls/AvalonControlsLibrary/Controls"
         xmlns:local="clr-namespace:BatRecordingManager"
         mc:Ignorable="d"
         Title="AudioPlayer" Height="450" Width="900" Background="{StaticResource BlueGradientBackground}"
@@ -11,7 +12,7 @@
     <Grid
         Background="{StaticResource BlueGradientBackground}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
+            <RowDefinition Height="60" />
             <RowDefinition Height="328*" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
@@ -28,6 +29,7 @@
                     x:Name="FileButton"
                     Style="{StaticResource SimpleButton}"
                     Visibility="Visible"
+                    Height="30"
                     Content="File" Click="FileButton_Click"/>
                 <Button
                     x:Name="RewindButton"
@@ -37,14 +39,17 @@
                 <Button
                     x:Name="PlayButton"
                     Style="{StaticResource SimpleButton}"
+                    Height="30"
                     Content="PLAY" Click="PlayButton_Click" />
                 <Button
                     x:Name="PlayLoopedButton"
                     Style="{StaticResource SimpleButton}"
+                    Height="30"
                     Content="LOOP" Click="PlayButton_Click" />
                 <Button
                     x:Name="SaveButton"
                     Style="{StaticResource SimpleButton}"
+                    Height="30"
                     Content="SAVE" Click="PlayButton_Click"
                     />
                 <Button
@@ -56,6 +61,7 @@
             </StackPanel>
             <StackPanel
                 x:Name="ParameterButtonsPanel"
+                VerticalAlignment="Center"
                 Orientation="Horizontal">
                 <RadioButton
                     x:Name="FullSpeedButton"
@@ -86,26 +92,58 @@
                     Margin="0,0,5,0"/>
 
             </StackPanel>
-            <Slider
-                x:Name="FrequencySlider"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                Width="200"
-                LargeChange="10"
-                SmallChange="5"
-                Value="{Binding Path=Frequency, Mode=OneWayToSource,FallbackValue=50}"
-                Maximum="150"
-                Minimum="15"
-                TickFrequency="10"
-                ToolTip="Select tuned frequency in kHz" ValueChanged="FrequencySlider_ValueChanged" />
-            <tk:NumericSpinner
-                x:Name="FrequencyUpDown"
-                Width="100"
-                
-                Value="{Binding ElementName=FrequencySlider,Path=Value, Mode=TwoWay}"
-                Decimals="1" />
-            <Label
-                Content="kHz" />
+            <StackPanel Orientation="Vertical" Margin="10,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Slider
+                        x:Name="FrequencySlider"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Width="200"
+                        LargeChange="10"
+                        SmallChange="5"
+                        Value="{Binding Path=Frequency, Mode=OneWayToSource,FallbackValue=50}"
+                        Maximum="150"
+                        Minimum="15"
+                        TickFrequency="10"
+                        ToolTip="Select tuned frequency in kHz" ValueChanged="FrequencySlider_ValueChanged" TickPlacement="BottomRight" />
+                    <tk:NumericSpinner
+                        x:Name="FrequencyUpDown"
+                        Width="100"
+                        Height="25"
+                        VerticalAlignment="Center"
+                        Value="{Binding ElementName=FrequencySlider,Path=Value, Mode=TwoWay}"
+                        Decimals="1" />
+                        <Label
+                        Content="kHz" /> 
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Slider
+                        x:Name="VolumeSlider"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Width="200"
+                        LargeChange="1"
+                        SmallChange="0.1"
+                        Value="{Binding Path=Volume, Mode=OneWayToSource,FallbackValue=5}"
+                        Maximum="10"
+                        Minimum="0"
+                        TickFrequency="1"
+                        ToolTip="Select Replay Volume" 
+                        ValueChanged="VolumeSlider_ValueChanged" TickPlacement="BottomRight" 
+                         />
+                    <tk:NumericSpinner
+                        x:Name="VolumeUpDown"
+                        Width="100"
+                        Height="25"
+                        VerticalAlignment="Center"
+                        MaxValue="10.0"
+                        MinValue="0.0"
+                        Value="{Binding ElementName=VolumeSlider,Path=Value, Mode=TwoWay}"
+                        Decimals="1" />
+                    <Label
+                        Content="Vol" />
+                </StackPanel>
+            </StackPanel>
 
 
         </StackPanel>
@@ -125,10 +163,31 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding filename}" ClipboardContentBinding="{x:Null}" Header="File"
                                     IsReadOnly="True" />
-                <DataGridTextColumn Binding="{Binding startOffset, Converter={StaticResource ConvertTimeSpan}}"
-                                    Width="100" ClipboardContentBinding="{x:Null}" Header="Start" IsReadOnly="True" />
-                <DataGridTextColumn Binding="{Binding playLength,Mode=TwoWay, Converter={StaticResource ConvertTimeSpan}}"
-                                    Width="100" ClipboardContentBinding="{x:Null}" Header="Duration" IsReadOnly="False" />
+                
+                <DataGridTemplateColumn
+                    Header="Start mm:ss.ss" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <tk:WPFShortTimePicker
+                               x:Name="StartOffsetPicker"
+                               Value="{Binding Path=startOffset,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                
+                                />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn
+                    Header="Duration" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <tk:WPFShortTimePicker
+                               x:Name="DurationPicker"
+                               Value="{Binding Path=playLength,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                
+                                />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Binding="{Binding label}" ClipboardContentBinding="{x:Null}" Header="Comments"
                                     IsReadOnly="True" />
             </DataGrid.Columns>

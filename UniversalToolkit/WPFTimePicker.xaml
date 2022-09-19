@@ -12,15 +12,15 @@
 
         <Grid.ColumnDefinitions>
 
-            <ColumnDefinition Width="0.2*"/>
+            <ColumnDefinition x:Name="hrsColumn"  Width="0.2*"/>
 
             <ColumnDefinition Width="0.05*"/>
 
-            <ColumnDefinition Width="0.2*"/>
+            <ColumnDefinition x:Name="minsColumn" Width="0.2*"/>
 
             <ColumnDefinition Width="0.05*"/>
 
-            <ColumnDefinition Width="0.2*"/>
+            <ColumnDefinition x:Name="secsColumn" Width="0.2*"/>
 
         </Grid.ColumnDefinitions>
 

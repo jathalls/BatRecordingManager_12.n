@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvalonControlsLibrary", "..\AvalonControlsLibrary-master\AvalonControlsLibrary-master\AvalonControlsLibrary\AvalonControlsLibrary.csproj", "{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,24 @@ Global
 		{7D072491-04CB-4BD7-B5D2-7A13AA3DE2AB}.Release64|x64.Build.0 = Release|Any CPU
 		{7D072491-04CB-4BD7-B5D2-7A13AA3DE2AB}.Release64|x86.ActiveCfg = Release|Any CPU
 		{7D072491-04CB-4BD7-B5D2-7A13AA3DE2AB}.Release64|x86.Build.0 = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Debug|x64.Build.0 = Debug|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Debug|x86.Build.0 = Debug|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release|x64.ActiveCfg = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release|x64.Build.0 = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release|x86.ActiveCfg = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release|x86.Build.0 = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release64|Any CPU.ActiveCfg = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release64|Any CPU.Build.0 = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release64|x64.ActiveCfg = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release64|x64.Build.0 = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release64|x86.ActiveCfg = Release|Any CPU
+		{F2E7B3F0-E03E-4341-984F-2962ACA8C07E}.Release64|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

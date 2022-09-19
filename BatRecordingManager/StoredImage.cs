@@ -410,6 +410,9 @@ namespace BatRecordingManager
                 {
                     Tools.ErrorLog(iex.Message + " Invalid Bitmap");
                     Debug.WriteLine("**** Invalid operation, invalid bitmap:- " + iex);
+                }catch(Exception ex)
+                {
+                    Tools.ErrorLog($"Image to large to process:- {ex.Message}");
                 }
 
             return null;

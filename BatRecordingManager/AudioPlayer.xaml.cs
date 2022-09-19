@@ -19,8 +19,11 @@ using NAudio.Wave;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -83,12 +86,29 @@ namespace BatRecordingManager
             var start = segmentToAdd.StartOffset;
             var duration = segmentToAdd.Duration() ?? new TimeSpan();
             var comment = segmentToAdd.Comment;
-            var pli = PlayListItem.Create(filename, start, duration, comment);
+            var pli = PlayListItem.Create(filename);
+            pli.startOffset = start;
+            pli.playLength = duration;
+            pli.label = comment;
+            pli.segment = segmentToAdd;
+            pli.segmentDuration=segmentToAdd.Duration()??new TimeSpan();
+            pli.segmentOffset = segmentToAdd.StartOffset;
+            var sonagramGenerator = new SegmentSonagrams();
+            var si=sonagramGenerator.GenerateForSegment(segmentToAdd, display: SegmentSonagrams.DisplayMode.ALWAYS);
+            SpectrogramWindow.Display(sonagramGenerator,pli);
+
+            if(si!=null)
+                pli.hasSpectrogram = true;
+            else
+                pli.hasSpectrogram = false;
             AddToPlayList(pli);
 
+            pli.ItemClosed += Pli_ItemClosed;
 
             return PlayList.Count;
         }
+
+        
 
         private void SetButtonVisibility()
         {
@@ -131,14 +151,21 @@ namespace BatRecordingManager
         /// <param name="duration"></param>
         /// <param name="label"></param>
         /// <returns></returns>
-        public bool AddToPlayList(string filename, TimeSpan start, TimeSpan duration, string label)
+        public bool AddToPlayList(string filename, TimeSpan start, TimeSpan duration, 
+            TimeSpan segmentOffset, TimeSpan segmentDuration, TimeSpan fileDuration, string label,LabelledSegment segment)
         {
-            var pli = PlayListItem.Create(filename, start, duration, label);
-            if (pli != null) return AddToPlayList(pli);
+            var pli = PlayListItem.Create(filename, start, duration,segmentOffset,segmentDuration, fileDuration, label,segment);
+            if (pli != null)
+            {
+                pli.ItemClosed += Pli_ItemClosed;
+                return AddToPlayList(pli);
+            }
             this.BringIntoView();
             this.Focus();
             return false;
         }
+
+        
 
         /// <summary>
         ///     Adds a pre-constructed playlistitem to the playlist
@@ -149,10 +176,42 @@ namespace BatRecordingManager
         {
             if (pli == null) return false;
             PlayList.Add(pli);
+            pli.ItemClosed += Pli_ItemClosed;
+            if (!pli.hasSpectrogram)
+            {
+                
+                var sgi = new SegmentSonagrams();
+                StoredImage si = null;
+                if (pli.segment != null && pli.segment.Recording != null)
+                {
+                    si = sgi.GenerateForSegment(pli.segment, display: SegmentSonagrams.DisplayMode.ALWAYS);
+                }
+                else
+                {
+                    si = sgi.GenerateForFile(pli.filename, 0.0d, pli.fileDuration.TotalSeconds,display:SegmentSonagrams.DisplayMode.ALWAYS);
+                }
+                if (si != null)
+                {
+                    pli.hasSpectrogram = true;
+                    SpectrogramWindow.Display(sonagramGenerator:sgi, pli: pli);
+                }
+                
+            }
             SetButtonVisibility();
             this.BringIntoView();
             this.Focus();
             return true;
+        }
+
+        private void Pli_ItemClosed(object sender, EventArgs e)
+        {
+            var pli = sender as PlayListItem;
+            if (pli != null)
+            {
+                PlayList.Remove(pli);
+                this.BringIntoView();
+                this.Focus();
+            }
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -222,6 +281,7 @@ namespace BatRecordingManager
             {
                 _wrapper = new NaudioWrapper2();
                 _wrapper.e_Stopped += Wrapper_Stopped;
+                _wrapper.PlayStarted += _wrapper_PlayStarted;
                 _wrapper.currentSpeed = 0.0m;
                 _wrapper.Frequency = (decimal)Frequency;
                 if (BroadbandButton.IsChecked ?? false) _wrapper.currentSpeed = -1.0m;
@@ -231,6 +291,8 @@ namespace BatRecordingManager
                 else if (FullSpeedButton.IsChecked ?? false) _wrapper.currentSpeed = 1.0m;
                 _wrapper.playableItem = itemToPlay;
                 _wrapper.PlayLooped = playLooped;
+                _wrapper.SaveFileName = filename;
+                _wrapper.Volume = getLogVol((float)VolumeSlider.Value);
                 _wrapper.PlayContinuous();
                // _wrapper.Play(filename);
             }
@@ -238,10 +300,19 @@ namespace BatRecordingManager
 
         }
 
-       
+        private void _wrapper_PlayStarted(object sender, EventArgs e)
+        {
+            var playingItem = GetItemToPlay();
+            playingItem.OnPlayStarted(EventArgs.Empty);
+
+            
+        }
 
         private void Wrapper_Stopped(object sender, EventArgs e)
         {
+            
+            var PlayingItem = GetItemToPlay();
+            PlayingItem.OnPlayEnded(EventArgs.Empty);
             if (_wrapper != null)
             {
                 _wrapper.Dispose();
@@ -276,7 +347,13 @@ namespace BatRecordingManager
                 _wrapper = null;
             }
 
-            PlayList?.Clear();
+            for(int i=PlayList.Count-1; i>=0; i--)
+            {
+                PlayList[i]?.Close();
+                //PlayList.RemoveAt(i);
+            }
+
+            //PlayList?.Clear();
             ShowInTaskbar = true;
             WindowState = WindowState.Minimized;
             PlayButton.Content = "PLAY";
@@ -328,37 +405,144 @@ namespace BatRecordingManager
             {
                 if (File.Exists(file))
                 {
-                    var pli = PlayListItem.Create(file);
-                    if (pli != null) AddToPlayList(pli);
+                    using (new WaitCursor())
+                    {
+                        var pli = PlayListItem.Create(file);
+                        if (pli != null) AddToPlayList(pli);
+                    }
                 }
             }
         }
+
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            float logVol = getLogVol((float)VolumeSlider.Value);
+
+            if (_wrapper != null)
+            {
+                if (_wrapper._volumeProvider != null)
+                {
+                    _wrapper.Volume = logVol;
+                    _wrapper._volumeProvider.Volume = logVol;
+                    //Debug.WriteLine($"Vol = {logVol}");
+                }
+            }
+        }
+
+        private float getLogVol(float value)
+        {
+            return (0.04f * (float)Math.Exp(0.7d * value));
+        }
+
+        public event EventHandler<EventArgs> PlayStarted;
+        protected virtual void OnPlayStarted(EventArgs e) => PlayStarted?.Invoke(this, e);
+
+        public event EventHandler<EventArgs> PlayEnded;
+        protected virtual void OnPlayEnded(EventArgs e) => PlayEnded?.Invoke(this, e);
     }
+
+
 
     /// <summary>
     ///     A class to hold items to be displayed in the AudioPlayer playlist
     /// </summary>
-    public class PlayListItem
+    public class PlayListItem:INotifyPropertyChanged
     {
         /// <summary>
         ///     fully qualified name of the source .wav file
         /// </summary>
         public string filename { get; set; }
 
+        public bool hasSpectrogram { get; set; } = false;
+
+        public TimeSpan segmentOffset { get; set; } = new TimeSpan();
+
+        public TimeSpan segmentDuration { get; set; } = new TimeSpan();
+
+        private TimeSpan _startOffset = new TimeSpan();
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName="")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void setStartAndLength(double startOffset,double duration)
+        {
+            Locked = true;
+            this.startOffset = TimeSpan.FromSeconds(startOffset) + segmentOffset;
+            this.playLength = TimeSpan.FromSeconds(duration);
+            Locked = false;
+        }
         /// <summary>
         ///     offset in the file for the start of the region to be played
         /// </summary>
-        public TimeSpan startOffset { get; set; }
+        public TimeSpan startOffset 
+        {
+            get
+            {
+                if (_startOffset > fileDuration - _playLength)
+                {
+                    _startOffset = fileDuration - _playLength;
+                    if (_startOffset.Ticks < 0) _startOffset = new TimeSpan();
+                }
+                return _startOffset;
+            }
+            set
+            {
+                _startOffset = value;
+                OnPropertyChanged(nameof(startOffset));
+                if(!Locked)
+                    OnSegmentChanged(EventArgs.Empty);
+            }
+        }
 
+        private TimeSpan _playLength = new TimeSpan();
         /// <summary>
         ///     duration of the segment to be played
         /// </summary>
-        public TimeSpan playLength { get; set; }
+        public TimeSpan playLength 
+        { 
+            get 
+            {
+                if (_playLength + _startOffset > fileDuration)
+                {
+                    _playLength = fileDuration - _startOffset;
+                    if(_playLength.Ticks < 0) _playLength = new TimeSpan();
+                }
+                return _playLength;
+            } 
+            set 
+            { 
+                _playLength = value;
+                OnPropertyChanged(nameof(playLength));
+                if(!Locked)
+                    OnSegmentChanged(EventArgs.Empty);
+            } 
+        }
+
+        private TimeSpan _fileDuration = new TimeSpan();
+        /// <summary>
+        /// The full length of the file refferred to
+        /// </summary>
+        public TimeSpan fileDuration 
+        {
+            get
+            {
+                return _fileDuration;
+            }
+            set
+            {
+                _fileDuration = value;
+            }
+        }
 
         /// <summary>
         ///     label of the original labelled segment or other comment for the playlist display
         /// </summary>
         public string label { get; set; }
+        public LabelledSegment segment { get; internal set; }
 
         /// <summary>
         ///     Constructor for playlist elements
@@ -367,7 +551,8 @@ namespace BatRecordingManager
         /// <param name="start"></param>
         /// <param name="duration"></param>
         /// <param name="label"></param>
-        public static PlayListItem Create(string filename, TimeSpan start, TimeSpan duration, string label)
+        public static PlayListItem Create(string filename, TimeSpan start, TimeSpan duration, 
+            TimeSpan segmentOffset, TimeSpan segmentDuration, TimeSpan fileDuration, string label,LabelledSegment segment,bool hasSpectrogram=false)
         {
             if (string.IsNullOrWhiteSpace(filename)) return null;
             if (!File.Exists(filename) || (new FileInfo(filename).Length <= 0L)) return null;
@@ -376,22 +561,56 @@ namespace BatRecordingManager
                 filename = filename,
                 startOffset = start,
                 playLength = duration,
-                label = label
+                segmentOffset= segmentOffset,
+                segmentDuration= segmentDuration,
+                fileDuration = fileDuration,
+                label = label,
+                segment=segment,
+                hasSpectrogram=hasSpectrogram
             };
 
 
             return result;
         }
 
+        private bool Locked = false;
+
         public static PlayListItem Create(string filename)
         {
             WaveFileReader wfr=new WaveFileReader(filename);
 
-            TimeSpan defLength = TimeSpan.FromSeconds(10);
+            TimeSpan defLength = wfr.TotalTime;
 
             if(wfr.TotalTime<defLength)defLength= wfr.TotalTime;
 
-            return(PlayListItem.Create(filename,new TimeSpan(),defLength,filename));
+            return(PlayListItem.Create(filename,start: new TimeSpan(),duration:defLength,
+                segmentOffset: new TimeSpan(),segmentDuration: defLength,
+                fileDuration: wfr.TotalTime,label: filename,segment: null));
         }
+
+        public event EventHandler<EventArgs> SegmentChanged;
+
+        protected virtual void OnSegmentChanged(EventArgs e) => SegmentChanged?.Invoke(this, e);
+
+        internal void Close()
+        {
+            OnItemClosed(EventArgs.Empty);
+        }
+
+        public event EventHandler<EventArgs> ItemClosed;
+
+        protected virtual void OnItemClosed(EventArgs e) => ItemClosed?.Invoke(this, e);
+
+        public event EventHandler<EventArgs> PlayStarted;
+        public virtual void OnPlayStarted(EventArgs e) => PlayStarted?.Invoke(this, e);
+
+        public event EventHandler<EventArgs> PlayEnded;
+        public virtual void OnPlayEnded(EventArgs e) => PlayEnded?.Invoke(this, e);
+
+
     }
+
+    
+
+
 }

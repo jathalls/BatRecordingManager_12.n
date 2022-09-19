@@ -48,3 +48,5 @@ C:\BRM12\BatRecordingManager_v12\UniversalToolkit\obj\Release\net6.0-windows\Uni
 C:\BRM12\BatRecordingManager_v12\UniversalToolkit\obj\Release\net6.0-windows\refint\UniversalToolkit.dll
 C:\BRM12\BatRecordingManager_v12\UniversalToolkit\obj\Release\net6.0-windows\UniversalToolkit.pdb
 C:\BRM12\BatRecordingManager_v12\UniversalToolkit\obj\Release\net6.0-windows\ref\UniversalToolkit.dll
+C:\BRM12\BatRecordingManager_v12\UniversalToolkit\obj\Release\net6.0-windows\WPFShortTimePicker.baml
+C:\BRM12\BatRecordingManager_v12\UniversalToolkit\obj\Release\net6.0-windows\WPFShortTimePicker.g.cs

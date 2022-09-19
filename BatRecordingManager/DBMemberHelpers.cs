@@ -541,7 +541,7 @@ namespace BatRecordingManager
         {
             get
             {
-                if (_startDateTime != null) return (_startDateTime.Value);
+                if (_startDateTime != null && _startDateTime?.Year>1900) return (_startDateTime.Value);
                 else
                 {
                     DateTime result = new DateTime();

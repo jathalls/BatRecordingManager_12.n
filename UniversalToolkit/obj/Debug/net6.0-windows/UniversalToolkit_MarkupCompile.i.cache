@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 
-4-1382855236
+5-181450299
 
-9-1386277972
-2591325809238
-Generic.xaml;WPFDateTimePicker.xaml;WPFNumericSpinner.xaml;WPFTimePicker.xaml;
+10-986953748
+2591053716294
+Generic.xaml;WPFDateTimePicker.xaml;WPFNumericSpinner.xaml;WPFShortTimePicker.xaml;WPFTimePicker.xaml;
 
 False
 

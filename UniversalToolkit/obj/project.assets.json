@@ -276,11 +276,11 @@
           "lib/netstandard1.0/_._": {}
         }
       },
-      "Microsoft.VisualStudio.CoreUtility/17.2.3194": {
+      "Microsoft.VisualStudio.CoreUtility/17.3.198": {
         "type": "package",
         "dependencies": {
-          "Microsoft.VisualStudio.Threading": "17.2.32",
-          "System.Collections.Immutable": "5.0.0",
+          "Microsoft.VisualStudio.Threading": "17.3.33",
+          "System.Collections.Immutable": "6.0.0",
           "System.ComponentModel.Composition": "6.0.0"
         },
         "compile": {
@@ -294,14 +294,14 @@
           }
         }
       },
-      "Microsoft.VisualStudio.Language/17.2.3194": {
+      "Microsoft.VisualStudio.Language/17.3.198": {
         "type": "package",
         "dependencies": {
-          "Microsoft.VisualStudio.CoreUtility": "17.2.3194",
-          "Microsoft.VisualStudio.Text.Data": "17.2.3194",
-          "Microsoft.VisualStudio.Text.Logic": "17.2.3194",
-          "Microsoft.VisualStudio.Text.UI": "17.2.3194",
-          "StreamJsonRpc": "2.11.35",
+          "Microsoft.VisualStudio.CoreUtility": "17.3.198",
+          "Microsoft.VisualStudio.Text.Data": "17.3.198",
+          "Microsoft.VisualStudio.Text.Logic": "17.3.198",
+          "Microsoft.VisualStudio.Text.UI": "17.3.198",
+          "StreamJsonRpc": "2.11.39",
           "System.ComponentModel.Composition": "6.0.0",
           "System.Private.Uri": "4.3.2"
         },
@@ -322,11 +322,11 @@
           "build/Microsoft.VisualStudio.SDK.EmbedInteropTypes.targets": {}
         }
       },
-      "Microsoft.VisualStudio.Text.Data/17.2.3194": {
+      "Microsoft.VisualStudio.Text.Data/17.3.198": {
         "type": "package",
         "dependencies": {
-          "Microsoft.VisualStudio.CoreUtility": "17.2.3194",
-          "Microsoft.VisualStudio.Threading": "17.2.32"
+          "Microsoft.VisualStudio.CoreUtility": "17.3.198",
+          "Microsoft.VisualStudio.Threading": "17.3.33"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Text.Data.dll": {
@@ -339,12 +339,12 @@
           }
         }
       },
-      "Microsoft.VisualStudio.Text.Logic/17.2.3194": {
+      "Microsoft.VisualStudio.Text.Logic/17.3.198": {
         "type": "package",
         "dependencies": {
-          "Microsoft.VisualStudio.CoreUtility": "17.2.3194",
-          "Microsoft.VisualStudio.Text.Data": "17.2.3194",
-          "System.Collections.Immutable": "5.0.0",
+          "Microsoft.VisualStudio.CoreUtility": "17.3.198",
+          "Microsoft.VisualStudio.Text.Data": "17.3.198",
+          "System.Collections.Immutable": "6.0.0",
           "System.ComponentModel.Composition": "6.0.0"
         },
         "compile": {
@@ -358,12 +358,12 @@
           }
         }
       },
-      "Microsoft.VisualStudio.Text.UI/17.2.3194": {
+      "Microsoft.VisualStudio.Text.UI/17.3.198": {
         "type": "package",
         "dependencies": {
-          "Microsoft.VisualStudio.CoreUtility": "17.2.3194",
-          "Microsoft.VisualStudio.Text.Data": "17.2.3194",
-          "Microsoft.VisualStudio.Text.Logic": "17.2.3194",
+          "Microsoft.VisualStudio.CoreUtility": "17.3.198",
+          "Microsoft.VisualStudio.Text.Data": "17.3.198",
+          "Microsoft.VisualStudio.Text.Logic": "17.3.198",
           "System.ComponentModel.Composition": "6.0.0"
         },
         "compile": {
@@ -377,22 +377,22 @@
           }
         }
       },
-      "Microsoft.VisualStudio.Threading/17.2.32": {
+      "Microsoft.VisualStudio.Threading/17.3.33": {
         "type": "package",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
-          "Microsoft.VisualStudio.Threading.Analyzers": "17.2.32",
-          "Microsoft.VisualStudio.Validation": "17.0.53",
+          "Microsoft.VisualStudio.Threading.Analyzers": "17.3.33",
+          "Microsoft.VisualStudio.Validation": "17.0.58",
           "Microsoft.Win32.Registry": "5.0.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
         },
         "compile": {
-          "lib/net5.0-windows7.0/Microsoft.VisualStudio.Threading.dll": {
+          "lib/net6.0-windows7.0/Microsoft.VisualStudio.Threading.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net5.0-windows7.0/Microsoft.VisualStudio.Threading.dll": {
+          "lib/net6.0-windows7.0/Microsoft.VisualStudio.Threading.dll": {
             "related": ".xml"
           }
         },
@@ -400,54 +400,54 @@
           "Microsoft.WindowsDesktop.App.WPF"
         ],
         "resource": {
-          "lib/net5.0-windows7.0/cs/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/cs/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "cs"
           },
-          "lib/net5.0-windows7.0/de/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/de/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "de"
           },
-          "lib/net5.0-windows7.0/es/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/es/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "es"
           },
-          "lib/net5.0-windows7.0/fr/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/fr/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "fr"
           },
-          "lib/net5.0-windows7.0/it/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/it/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "it"
           },
-          "lib/net5.0-windows7.0/ja/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/ja/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "ja"
           },
-          "lib/net5.0-windows7.0/ko/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/ko/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "ko"
           },
-          "lib/net5.0-windows7.0/pl/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/pl/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "pl"
           },
-          "lib/net5.0-windows7.0/pt-BR/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/pt-BR/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "pt-BR"
           },
-          "lib/net5.0-windows7.0/ru/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/ru/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "ru"
           },
-          "lib/net5.0-windows7.0/tr/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/tr/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "tr"
           },
-          "lib/net5.0-windows7.0/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "zh-Hans"
           },
-          "lib/net5.0-windows7.0/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll": {
+          "lib/net6.0-windows7.0/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll": {
             "locale": "zh-Hant"
           }
         }
       },
-      "Microsoft.VisualStudio.Threading.Analyzers/17.2.32": {
+      "Microsoft.VisualStudio.Threading.Analyzers/17.3.33": {
         "type": "package",
         "build": {
           "build/_._": {}
         }
       },
-      "Microsoft.VisualStudio.Validation/17.0.53": {
+      "Microsoft.VisualStudio.Validation/17.0.64": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/Microsoft.VisualStudio.Validation.dll": {
@@ -766,7 +766,7 @@
           }
         }
       },
-      "Shiny.Core/2.5.5": {
+      "Shiny.Core/2.6.1": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "6.0.0",
@@ -785,7 +785,7 @@
           }
         }
       },
-      "StreamJsonRpc/2.11.35": {
+      "StreamJsonRpc/2.11.39": {
         "type": "package",
         "dependencies": {
           "MessagePack": "2.3.85",
@@ -902,17 +902,23 @@
           "lib/netstandard1.3/System.Collections.Concurrent.dll": {}
         }
       },
-      "System.Collections.Immutable/5.0.0": {
+      "System.Collections.Immutable/6.0.0": {
         "type": "package",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
         "compile": {
-          "lib/netstandard2.0/System.Collections.Immutable.dll": {
+          "lib/net6.0/System.Collections.Immutable.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/netstandard2.0/System.Collections.Immutable.dll": {
+          "lib/net6.0/System.Collections.Immutable.dll": {
             "related": ".xml"
           }
+        },
+        "build": {
+          "buildTransitive/netcoreapp3.1/_._": {}
         }
       },
       "System.ComponentModel.Composition/6.0.0": {
@@ -3111,10 +3117,10 @@
         "runtime.json"
       ]
     },
-    "Microsoft.VisualStudio.CoreUtility/17.2.3194": {
-      "sha512": "bcPvoEHxv6EYWgNsFnwg8vlEB90MB44LWvuJtCRf3cOCCAGjMcDysLtq5IThaIIVsL5uvb3bv4i+f1L7NNGwjQ==",
+    "Microsoft.VisualStudio.CoreUtility/17.3.198": {
+      "sha512": "gmRxvfjev7Utms8XoWr8eLnEqpD4hbulDhKBSqj30AdLS712QUajH9sGgqWMk6eWm9t00mAPlph/LU5Ae08ejg==",
       "type": "package",
-      "path": "microsoft.visualstudio.coreutility/17.2.3194",
+      "path": "microsoft.visualstudio.coreutility/17.3.198",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3124,14 +3130,14 @@
         "lib/net472/Microsoft.VisualStudio.CoreUtility.xml",
         "lib/netstandard2.0/Microsoft.VisualStudio.CoreUtility.dll",
         "lib/netstandard2.0/Microsoft.VisualStudio.CoreUtility.xml",
-        "microsoft.visualstudio.coreutility.17.2.3194.nupkg.sha512",
+        "microsoft.visualstudio.coreutility.17.3.198.nupkg.sha512",
         "microsoft.visualstudio.coreutility.nuspec"
       ]
     },
-    "Microsoft.VisualStudio.Language/17.2.3194": {
-      "sha512": "1tepx+XpLYhbn0DcoNOQz2FbPhk6HOZnTHzX18OydArP0/GnCcLbb50drT0/S4iZ26mSANzw0NfrMJnegEGTpg==",
+    "Microsoft.VisualStudio.Language/17.3.198": {
+      "sha512": "PEkX3tweyDOIB/NfyaH9kBt4vUugQBwTzU3MfPGCDPah0iKxfLAqV5/o3n/d5q417ST82RzkNrcvAQbQH5gryA==",
       "type": "package",
-      "path": "microsoft.visualstudio.language/17.2.3194",
+      "path": "microsoft.visualstudio.language/17.3.198",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3141,7 +3147,7 @@
         "lib/net472/Microsoft.VisualStudio.Language.xml",
         "lib/netstandard2.0/Microsoft.VisualStudio.Language.dll",
         "lib/netstandard2.0/Microsoft.VisualStudio.Language.xml",
-        "microsoft.visualstudio.language.17.2.3194.nupkg.sha512",
+        "microsoft.visualstudio.language.17.3.198.nupkg.sha512",
         "microsoft.visualstudio.language.nuspec"
       ]
     },
@@ -3157,10 +3163,10 @@
         "microsoft.visualstudio.sdk.embedinteroptypes.nuspec"
       ]
     },
-    "Microsoft.VisualStudio.Text.Data/17.2.3194": {
-      "sha512": "ZyUCnWT+Dr5TdcvaArPN8ijXu76jM7de7NLvaaaQyZXoUzHYzNQz0fzoRlxRYET9cvDu6tsCZT431JxKPn5p9w==",
+    "Microsoft.VisualStudio.Text.Data/17.3.198": {
+      "sha512": "MNC1a+PCAsQTSJs6H2pOhQk55EwB6v21kuU3xiFsugiTvfuKYSOv1XdpnkNwMPdmDTQvBkoaGV13HAxDEq7sSQ==",
       "type": "package",
-      "path": "microsoft.visualstudio.text.data/17.2.3194",
+      "path": "microsoft.visualstudio.text.data/17.3.198",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3170,14 +3176,14 @@
         "lib/net472/Microsoft.VisualStudio.Text.Data.xml",
         "lib/netstandard2.0/Microsoft.VisualStudio.Text.Data.dll",
         "lib/netstandard2.0/Microsoft.VisualStudio.Text.Data.xml",
-        "microsoft.visualstudio.text.data.17.2.3194.nupkg.sha512",
+        "microsoft.visualstudio.text.data.17.3.198.nupkg.sha512",
         "microsoft.visualstudio.text.data.nuspec"
       ]
     },
-    "Microsoft.VisualStudio.Text.Logic/17.2.3194": {
-      "sha512": "R3n80K1+OwW1lRCKifzfAnXbgb7PJvKELzxtaDGxo8SoNnUTXkO0P2qSK5Y0jFoJK+7yfLOxpQNhfIFKTE4igg==",
+    "Microsoft.VisualStudio.Text.Logic/17.3.198": {
+      "sha512": "t449oEKnraTsnBS7ejtm17b6bQIfo3+/tiaXJJzc1rQi5Ve9u9z5NHIo8H+sbr8WssiCx7/zS70Cv7IcKie4JA==",
       "type": "package",
-      "path": "microsoft.visualstudio.text.logic/17.2.3194",
+      "path": "microsoft.visualstudio.text.logic/17.3.198",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3187,14 +3193,14 @@
         "lib/net472/Microsoft.VisualStudio.Text.Logic.xml",
         "lib/netstandard2.0/Microsoft.VisualStudio.Text.Logic.dll",
         "lib/netstandard2.0/Microsoft.VisualStudio.Text.Logic.xml",
-        "microsoft.visualstudio.text.logic.17.2.3194.nupkg.sha512",
+        "microsoft.visualstudio.text.logic.17.3.198.nupkg.sha512",
         "microsoft.visualstudio.text.logic.nuspec"
       ]
     },
-    "Microsoft.VisualStudio.Text.UI/17.2.3194": {
-      "sha512": "UGegXrUnqhhXhlZsbklBZIp4wd0vHZQitkWMTR13SdwVQPUdpQYRNgsom9FBxM+3t9f8Dreg4ALt0SXFnCL3Yw==",
+    "Microsoft.VisualStudio.Text.UI/17.3.198": {
+      "sha512": "8+hPdh1d0USKvQke3fk1nHtwFHIPzP5mhclbPWNXEWS4fG9ZyriyNmDGKZj7tWCCohcYsK6hz4s9i2mvFQDpAQ==",
       "type": "package",
-      "path": "microsoft.visualstudio.text.ui/17.2.3194",
+      "path": "microsoft.visualstudio.text.ui/17.3.198",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3204,14 +3210,14 @@
         "lib/net472/Microsoft.VisualStudio.Text.UI.xml",
         "lib/netstandard2.0/Microsoft.VisualStudio.Text.UI.dll",
         "lib/netstandard2.0/Microsoft.VisualStudio.Text.UI.xml",
-        "microsoft.visualstudio.text.ui.17.2.3194.nupkg.sha512",
+        "microsoft.visualstudio.text.ui.17.3.198.nupkg.sha512",
         "microsoft.visualstudio.text.ui.nuspec"
       ]
     },
-    "Microsoft.VisualStudio.Threading/17.2.32": {
-      "sha512": "Sn73HwB0stbzlgug3Z61MHsBwWyUygUQd7s5fq3r1OOYgFJ+5EudhV3K4sO+v8UeBjKwSU7WqJTkoRmoVXFGFQ==",
+    "Microsoft.VisualStudio.Threading/17.3.33": {
+      "sha512": "k/PN2rDQ8jnaPDt/h6QXdynPQxP7sCdD+whgNxi/blQ77+wFVAa82CrqXeYWOah/cbSzGkvKsmkaJrxMcQKUkw==",
       "type": "package",
-      "path": "microsoft.visualstudio.threading/17.2.32",
+      "path": "microsoft.visualstudio.threading/17.3.33",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3232,36 +3238,36 @@
         "lib/net472/tr/Microsoft.VisualStudio.Threading.resources.dll",
         "lib/net472/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll",
         "lib/net472/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/Microsoft.VisualStudio.Threading.dll",
-        "lib/net5.0-windows7.0/Microsoft.VisualStudio.Threading.xml",
-        "lib/net5.0-windows7.0/cs/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/de/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/es/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/fr/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/it/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/ja/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/ko/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/pl/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/pt-BR/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/ru/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/tr/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0-windows7.0/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/Microsoft.VisualStudio.Threading.dll",
-        "lib/net5.0/Microsoft.VisualStudio.Threading.xml",
-        "lib/net5.0/cs/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/de/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/es/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/fr/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/it/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/ja/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/ko/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/pl/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/pt-BR/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/ru/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/tr/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll",
-        "lib/net5.0/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/Microsoft.VisualStudio.Threading.dll",
+        "lib/net6.0-windows7.0/Microsoft.VisualStudio.Threading.xml",
+        "lib/net6.0-windows7.0/cs/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/de/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/es/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/fr/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/it/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/ja/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/ko/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/pl/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/pt-BR/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/ru/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/tr/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0-windows7.0/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/Microsoft.VisualStudio.Threading.dll",
+        "lib/net6.0/Microsoft.VisualStudio.Threading.xml",
+        "lib/net6.0/cs/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/de/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/es/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/fr/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/it/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/ja/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/ko/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/pl/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/pt-BR/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/ru/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/tr/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll",
+        "lib/net6.0/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll",
         "lib/netcoreapp3.1/Microsoft.VisualStudio.Threading.dll",
         "lib/netcoreapp3.1/Microsoft.VisualStudio.Threading.xml",
         "lib/netcoreapp3.1/cs/Microsoft.VisualStudio.Threading.resources.dll",
@@ -3292,14 +3298,14 @@
         "lib/netstandard2.0/tr/Microsoft.VisualStudio.Threading.resources.dll",
         "lib/netstandard2.0/zh-Hans/Microsoft.VisualStudio.Threading.resources.dll",
         "lib/netstandard2.0/zh-Hant/Microsoft.VisualStudio.Threading.resources.dll",
-        "microsoft.visualstudio.threading.17.2.32.nupkg.sha512",
+        "microsoft.visualstudio.threading.17.3.33.nupkg.sha512",
         "microsoft.visualstudio.threading.nuspec"
       ]
     },
-    "Microsoft.VisualStudio.Threading.Analyzers/17.2.32": {
-      "sha512": "izJIEScEIBe8m96gMkox9vZE6r/Unk6giifbfRroqYJR3yESJqTkaQ707pE+jkJMqxHNT/lqBensuex90vPfPw==",
+    "Microsoft.VisualStudio.Threading.Analyzers/17.3.33": {
+      "sha512": "PdAqqFxVJ2uQXnNXmDQg+kk2qkkFP1tBSqbILCVucKLKb9seCwa2F4kLWHjwRF7gPPCePmf1aMNbp67LBUsxHw==",
       "type": "package",
-      "path": "microsoft.visualstudio.threading.analyzers/17.2.32",
+      "path": "microsoft.visualstudio.threading.analyzers/17.3.33",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
@@ -3343,19 +3349,20 @@
         "build/AdditionalFiles/vs-threading.MainThreadSwitchingMethods.txt",
         "build/AdditionalFiles/vs-threading.MembersRequiringMainThread.txt",
         "build/Microsoft.VisualStudio.Threading.Analyzers.targets",
-        "microsoft.visualstudio.threading.analyzers.17.2.32.nupkg.sha512",
+        "microsoft.visualstudio.threading.analyzers.17.3.33.nupkg.sha512",
         "microsoft.visualstudio.threading.analyzers.nuspec",
         "tools/install.ps1",
         "tools/uninstall.ps1"
       ]
     },
-    "Microsoft.VisualStudio.Validation/17.0.53": {
-      "sha512": "YUDb/V5JpiEGRXBut8fRy1rFqDRfl5XX3MgBaLsc0YVYpRy+pXb3pnzbceL1YMQxjrOiJPn5WZEpJNSxZvPdgg==",
+    "Microsoft.VisualStudio.Validation/17.0.64": {
+      "sha512": "tjh3zXOKXKXCeWNGMh+gq+B4SR9WBQPxoj37NY9klrJ8i8hmYZEIcb1khFkLRu988YHs0q6iawjk9Q/RvMdz3g==",
       "type": "package",
-      "path": "microsoft.visualstudio.validation/17.0.53",
+      "path": "microsoft.visualstudio.validation/17.0.64",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
+        "NOTICE",
         "PackageIcon.png",
         "README.md",
         "lib/netstandard2.0/Microsoft.VisualStudio.Validation.dll",
@@ -3373,7 +3380,7 @@
         "lib/netstandard2.0/tr/Microsoft.VisualStudio.Validation.resources.dll",
         "lib/netstandard2.0/zh-Hans/Microsoft.VisualStudio.Validation.resources.dll",
         "lib/netstandard2.0/zh-Hant/Microsoft.VisualStudio.Validation.resources.dll",
-        "microsoft.visualstudio.validation.17.0.53.nupkg.sha512",
+        "microsoft.visualstudio.validation.17.0.64.nupkg.sha512",
         "microsoft.visualstudio.validation.nuspec"
       ]
     },
@@ -3834,10 +3841,10 @@
         "serilog.nuspec"
       ]
     },
-    "Shiny.Core/2.5.5": {
-      "sha512": "N2WSMp/37WrMKEy+vugNqWOvbkObrhTgHn6ZtfPtR3GacLpoHU3d5QAnZTsLOQn98opVvhoLHRSf8k1Jy2csbw==",
+    "Shiny.Core/2.6.1": {
+      "sha512": "C29r0Hy6cisFS7LmHtNh/lyjA+vep4x5qXLPTJi+Y2ceRJ08QDVEX7WV+OFGle8EwWsbCFKG++WEP92DWUJTyA==",
       "type": "package",
-      "path": "shiny.core/2.5.5",
+      "path": "shiny.core/2.6.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3853,14 +3860,14 @@
         "lib/xamarinios10/Shiny.Core.xml",
         "readme.md",
         "readme.txt",
-        "shiny.core.2.5.5.nupkg.sha512",
+        "shiny.core.2.6.1.nupkg.sha512",
         "shiny.core.nuspec"
       ]
     },
-    "StreamJsonRpc/2.11.35": {
-      "sha512": "r2taKfcI3dmAChn0nqTLmwr3d/BXnUrIlDGF6het3NxL3sg6TntCGz60wBE4DmdlyeerMXkI5ZCC/Y4XCfetfA==",
+    "StreamJsonRpc/2.11.39": {
+      "sha512": "bSElwstR2dz2CmO1p9TCSJjjIzbAzqEnAs07jY5Lsw3aI/EyJMxoNLjvYNvSxN05F+W+SjDvvKmARRDEV+50cQ==",
       "type": "package",
-      "path": "streamjsonrpc/2.11.35",
+      "path": "streamjsonrpc/2.11.39",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3896,7 +3903,7 @@
         "lib/netstandard2.1/tr/StreamJsonRpc.resources.dll",
         "lib/netstandard2.1/zh-Hans/StreamJsonRpc.resources.dll",
         "lib/netstandard2.1/zh-Hant/StreamJsonRpc.resources.dll",
-        "streamjsonrpc.2.11.35.nupkg.sha512",
+        "streamjsonrpc.2.11.39.nupkg.sha512",
         "streamjsonrpc.nuspec"
       ]
     },
@@ -4057,30 +4064,27 @@
         "system.collections.concurrent.nuspec"
       ]
     },
-    "System.Collections.Immutable/5.0.0": {
-      "sha512": "FXkLXiK0sVVewcso0imKQoOxjoPAj42R8HtjjbSjVPAzwDfzoyoznWxgA3c38LDbN9SJux1xXoXYAhz98j7r2g==",
+    "System.Collections.Immutable/6.0.0": {
+      "sha512": "l4zZJ1WU2hqpQQHXz1rvC3etVZN+2DLmQMO79FhOTZHMn8tDRr+WU287sbomD0BETlmKDn0ygUgVy9k5xkkJdA==",
       "type": "package",
-      "path": "system.collections.immutable/5.0.0",
+      "path": "system.collections.immutable/6.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Icon.png",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/netcoreapp2.0/System.Collections.Immutable.targets",
+        "buildTransitive/netcoreapp3.1/_._",
         "lib/net461/System.Collections.Immutable.dll",
         "lib/net461/System.Collections.Immutable.xml",
-        "lib/netstandard1.0/System.Collections.Immutable.dll",
-        "lib/netstandard1.0/System.Collections.Immutable.xml",
-        "lib/netstandard1.3/System.Collections.Immutable.dll",
-        "lib/netstandard1.3/System.Collections.Immutable.xml",
+        "lib/net6.0/System.Collections.Immutable.dll",
+        "lib/net6.0/System.Collections.Immutable.xml",
         "lib/netstandard2.0/System.Collections.Immutable.dll",
         "lib/netstandard2.0/System.Collections.Immutable.xml",
-        "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll",
-        "lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.xml",
-        "system.collections.immutable.5.0.0.nupkg.sha512",
+        "system.collections.immutable.6.0.0.nupkg.sha512",
         "system.collections.immutable.nuspec",
-        "useSharedDesignerContext.txt",
-        "version.txt"
+        "useSharedDesignerContext.txt"
       ]
     },
     "System.ComponentModel.Composition/6.0.0": {
@@ -7943,15 +7947,15 @@
       "Microsoft.Bcl.AsyncInterfaces >= 6.0.0",
       "Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers >= 0.4.336902",
       "Microsoft.NETCore.Platforms >= 6.0.5",
-      "Microsoft.VisualStudio.Language >= 17.2.3194",
+      "Microsoft.VisualStudio.Language >= 17.3.198",
       "Microsoft.VisualStudio.SDK.EmbedInteropTypes >= 15.0.36",
-      "Microsoft.VisualStudio.Validation >= 17.0.53",
+      "Microsoft.VisualStudio.Validation >= 17.0.64",
       "Microsoft.Win32.Registry >= 6.0.0-preview.5.21301.5",
       "Microsoft.Windows.Compatibility >= 6.0.0",
       "NETStandard.Library >= 2.0.3",
       "Newtonsoft.Json >= 13.0.1",
       "Serilog >= 2.11.0",
-      "Shiny.Core >= 2.5.5",
+      "Shiny.Core >= 2.6.1",
       "System.Data.DataSetExtensions >= 4.6.0-preview3.19128.7",
       "System.Linq >= 4.3.0",
       "System.Linq.Dynamic.Core >= 1.2.19",
@@ -8042,7 +8046,7 @@
           },
           "Microsoft.VisualStudio.Language": {
             "target": "Package",
-            "version": "[17.2.3194, )"
+            "version": "[17.3.198, )"
           },
           "Microsoft.VisualStudio.SDK.EmbedInteropTypes": {
             "target": "Package",
@@ -8050,7 +8054,7 @@
           },
           "Microsoft.VisualStudio.Validation": {
             "target": "Package",
-            "version": "[17.0.53, )"
+            "version": "[17.0.64, )"
           },
           "Microsoft.Win32.Registry": {
             "target": "Package",
@@ -8074,7 +8078,7 @@
           },
           "Shiny.Core": {
             "target": "Package",
-            "version": "[2.5.5, )"
+            "version": "[2.6.1, )"
           },
           "System.Data.DataSetExtensions": {
             "target": "Package",

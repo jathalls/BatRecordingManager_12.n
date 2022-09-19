@@ -298,10 +298,12 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\AvalonControlsLibrary-master\AvalonControlsLibrary-master\AvalonControlsLibrary\AvalonControlsLibrary.csproj" />
     <ProjectReference Include="..\Mm.ExportableDataGrid\Mm.ExportableDataGrid.csproj" />
     <ProjectReference Include="..\UniversalToolkit\UniversalToolkit.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AvalonLibrary" Version="3.0.0" />
     <PackageReference Include="BingMapsRESTToolkit" Version="1.1.4" />
     <PackageReference Include="DarkSkyApi" Version="3.3.0" />
     <PackageReference Include="F23.StringSimilarity" Version="5.0.0" />
@@ -310,20 +312,20 @@
     <PackageReference Include="LinqKit.Core" Version="1.2.2" />
     <PackageReference Include="LinqStatistics" Version="2.3.0" />
     <PackageReference Include="LiveCharts.Wpf.Core" Version="0.9.8" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="12.0.1" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="12.1.0" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageReference Include="Microsoft.Maps.MapControl.WPF" Version="1.0.0.3" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.5" />
     <PackageReference Include="Microsoft.NETCore.Targets" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.2.3194" />
+    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.3.198" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.36" />
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.53" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.64" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="6.0.0-preview.5.21301.5" />
     <PackageReference Include="Mindbox.Data.Linq" Version="5.0.0" />
     <PackageReference Include="Mindbox.Expressions" Version="3.3.0" />
     <PackageReference Include="NAudio" Version="2.1.0" />
-    <PackageReference Include="ScottPlot.WPF" Version="4.1.52" />
+    <PackageReference Include="ScottPlot.WPF" Version="4.1.57" />
     <PackageReference Include="Spectrogram" Version="1.6.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="6.0.0-preview.4.21253.7" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.6.0-preview3.19128.7" />

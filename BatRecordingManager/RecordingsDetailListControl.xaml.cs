@@ -32,6 +32,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 using UniversalToolkit;
+using static BatRecordingManager.SegmentSonagrams;
 
 namespace BatRecordingManager
 {
@@ -1060,14 +1061,14 @@ namespace BatRecordingManager
         private void miAnalyseSegment_Click(object sender, RoutedEventArgs e)
         {
             bool filter = false;
-            bool display = false;
+            DisplayMode display = DisplayMode.NONE;
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
             {
                 filter = true;
             }
             if(Keyboard.IsKeyDown(Key.LeftShift ) || Keyboard.IsKeyDown(Key.RightShift))
             {
-                display = true;
+                display = DisplayMode.IF_HAS_BATS;
             }
             var _sender = sender as MenuItem;
             var selection = GetSelectedSegments();
@@ -1107,7 +1108,7 @@ namespace BatRecordingManager
 
                         if (image != null)
                         {
-                            if (display)
+                            if (display!=DisplayMode.NONE)
                             {
                                 //var ft = sonagramGenerator.Ffts;
                                 SpectrogramWindow.Display(sonagramGenerator);
@@ -1227,7 +1228,7 @@ namespace BatRecordingManager
             {
                 var recordingId = (selection?.First()?.RecordingID) ?? -1;
                 SegmentSonagrams sonagramGenerator = new SegmentSonagrams();
-                sonagramGenerator.GenerateForSegments(selection, experimental,display:true);
+                sonagramGenerator.GenerateForSegments(selection, experimental,display:DisplayMode.ALWAYS);
                 SpectrogramWindow.Display(sonagramGenerator);
                 UpdateRecordingsList(recordingId);
             }

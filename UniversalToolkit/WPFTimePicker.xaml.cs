@@ -29,6 +29,8 @@ namespace UniversalToolkit
             control.Hours = ((TimeSpan)e.NewValue).Hours;
             control.Minutes = ((TimeSpan)e.NewValue).Minutes;
             control.Seconds = ((TimeSpan)e.NewValue).Seconds;
+            
+            
         }
 
         public int Hours
@@ -74,7 +76,8 @@ namespace UniversalToolkit
         private static void OnTimeChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             WPFTimePicker control = obj as WPFTimePicker;
-            control.Value = new TimeSpan(control.Hours, control.Minutes, control.Seconds);
+            var totalSeconds = control.Seconds + (control.Minutes * 60.0d) +(control.Hours*3600.0d);
+            control.Value = TimeSpan.FromSeconds(totalSeconds);
         }
 
         private void Down(object sender, KeyEventArgs args)
@@ -97,12 +100,7 @@ namespace UniversalToolkit
                             this.Minutes--;
                         break;
 
-                    case "hour":
-                        if (args.Key == Key.Up)
-                            this.Hours++;
-                        if (args.Key == Key.Down)
-                            this.Hours--;
-                        break;
+                    
                 }
             }
         }

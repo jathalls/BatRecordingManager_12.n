@@ -39,7 +39,7 @@ namespace BatRecordingManager
 		private readonly object _stoppedEventLock = new object();
 
 
-		private bool _doLoop;
+		
 
 		private bool _isDisposing;
 
@@ -47,11 +47,12 @@ namespace BatRecordingManager
 
 		private EventHandler _stoppedEvent;
 
-		private int BufferToUse = 0;
-		private string filename = "";
-		private bool doSave = false;
+		public VolumeSampleProvider _volumeProvider { get; set; } = null;
 
+		public float Volume { get; set; } = 5.0f;
 
+		
+		
 		private PlayListItem currentItem { get; set; }
 
 		/// <summary>
@@ -77,14 +78,16 @@ namespace BatRecordingManager
 			}
 		}
 
-		/// <summary>
-		///     Tidy up before disposal
-		/// </summary>
-		public void Dispose()
+        public string SaveFileName { get; internal set; }
+
+        /// <summary>
+        ///     Tidy up before disposal
+        /// </summary>
+        public void Dispose()
 		{
 			if (!_isDisposing)
 			{
-				_doLoop = false;
+				
 				_isDisposing = true;
 				if (_player != null && _player.PlaybackState == PlaybackState.Playing)
 				{
@@ -101,13 +104,18 @@ namespace BatRecordingManager
 			}
 		}
 
+		public NaudioWrapper2()
+		{
+			
+		}
+
 		/// <summary>
 		///     stops the player if it is playing
 		/// </summary>
 		/// <returns></returns>
 		public bool Stop()
 		{
-			_doLoop = false;
+			
 			if (_player != null && _player.PlaybackState != PlaybackState.Stopped)
 			{
 				_player.Stop();
@@ -138,10 +146,16 @@ namespace BatRecordingManager
 				sampleProvider = null;
 			}
 
+			
 			if (bufferedWaveProvider != null)
 			{
 				bufferedWaveProvider.ClearBuffer();
 				bufferedWaveProvider = null;
+			}
+
+			if (_volumeProvider != null)
+			{
+				_volumeProvider = null;
 			}
 
 			if (_timer != null)
@@ -149,6 +163,7 @@ namespace BatRecordingManager
 				_timer.Stop();
 				_timer.Dispose();
 				_timer = null;
+				
 			}
 
 
@@ -164,7 +179,18 @@ namespace BatRecordingManager
 
 			CleanUp();
 
-			if (playableItem.playLength.TotalSeconds <= 2.0d)
+			if (!String.IsNullOrWhiteSpace(SaveFileName))
+			{
+				using (new WaitCursor())
+				{
+					SaveProcessedDataToFile(SaveFileName, playableItem);
+					CleanUp();
+					OnStopped(EventArgs.Empty);
+					return;
+				}
+			}
+
+			if (playableItem.playLength.TotalSeconds <= 2.0d && currentSpeed<=0.0m)
 			{
 				// process and play the entire item in one go with no breaks
 
@@ -172,7 +198,13 @@ namespace BatRecordingManager
 				var reader = ProcessBuffer(playableItem.playLength.TotalSeconds);
 				var player = new WaveOut();
 
-				_player = new WaveOut();
+                
+                _volumeProvider = new VolumeSampleProvider(reader.ToSampleProvider());
+
+                
+                _volumeProvider.Volume = Volume;
+
+                _player = new WaveOut();
 				if (_player == null)
 				{
 					CleanUp();
@@ -182,7 +214,7 @@ namespace BatRecordingManager
 
 
 				_player.PlaybackStopped += Player_PlaybackStopped;
-				_player.Init(reader);
+				_player.Init(_volumeProvider);
 				_player.Play();
 
 			}
@@ -196,12 +228,25 @@ namespace BatRecordingManager
 				if (reader == null) return;
 
 				bufferedWaveProvider = new BufferedWaveProvider(reader.WaveFormat);
+				
+				
 				bufferedWaveProvider.BufferDuration = TimeSpan.FromSeconds(2.5);
-				Byte[] buffer = new byte[reader.Length]; // which is 2 seconds from call to ProcessBuffer
-				int Read = 0;
-				Read = reader.Read(buffer, 0, buffer.Length);
-				bufferedWaveProvider.AddSamples(buffer, 0, Read);
-				_player = new WaveOut();
+				
+				
+
+				if (_volumeProvider == null)
+				{
+					_volumeProvider = new VolumeSampleProvider(bufferedWaveProvider.ToSampleProvider());
+					
+				}
+				_volumeProvider.Volume = Volume;
+
+                Byte[] buffer = new byte[reader.Length]; // which is 2 seconds from call to ProcessBuffer
+                int Read = 0;
+                Read = reader.Read(buffer, 0, buffer.Length);
+                bufferedWaveProvider.AddSamples(buffer, 0, Read);
+
+                _player = new WaveOut();
 				if (_player == null)
 				{
 					CleanUp();
@@ -216,22 +261,27 @@ namespace BatRecordingManager
 				Debug.WriteLine($"BWP has capacity {bufferedWaveProvider.BufferDuration}, filled to {bufferedWaveProvider.BufferedDuration}");
 
 				_player.PlaybackStopped += Player_PlaybackStopped;
-				_player.Init(bufferedWaveProvider);
+				_player.Init(_volumeProvider);
 				_player.Play();
-
+				
 				_timer.Start();
 
+				OnPlayStarted(EventArgs.Empty);
 			}
 		}
 
 		private TimeSpan readerChunkDuration = TimeSpan.FromSeconds(2.0d);
 
+		
+
 		private void _timer_Tick(object sender, EventArgs e)
 		{
+			
+			
 			if (bufferedWaveProvider != null)
 			{
-				Debug.WriteLine($"Buffer contains {bufferedWaveProvider.BufferedDuration.TotalSeconds}seconds");
-
+				//Debug.WriteLine($"Buffer contains {bufferedWaveProvider.BufferedDuration.TotalSeconds}seconds");
+				
 
 				if (bufferedWaveProvider.BufferedDuration.TotalMilliseconds < 1.0d)
 				{
@@ -247,6 +297,10 @@ namespace BatRecordingManager
 					return;
 
 				}
+
+				if (_volumeProvider != null) _volumeProvider.Volume = Volume;
+
+				Debug.WriteLine($"Volume requested/got = {Volume}/{_volumeProvider.Volume}");
 
 				Byte[] buffer = new byte[reader.Length];
 				int Read = 0;
@@ -276,26 +330,38 @@ namespace BatRecordingManager
 		/// <exception cref="NotImplementedException"></exception>
 		private void SaveProcessedDataToFile(string filename, PlayListItem itemToPlay)
 		{
-
-			GetBuffer2();
-			var reader = ProcessBuffer(itemToPlay.playLength.TotalSeconds);
-			using (WaveFileWriter _writer = new WaveFileWriter(filename, reader.WaveFormat))
+			try
 			{
-
-				byte[] buffer = new byte[1024];
-				if (reader != null)
+				var playLength = playableItem.playLength.TotalSeconds;
+				GetBuffer2();
+				if (currentSpeed > 0.0m)
+				{
+					playLength = playLength / (double)currentSpeed;
+				}
+				var reader = ProcessBuffer(playLength);
+				using (WaveFileWriter _writer = new WaveFileWriter(filename, reader.WaveFormat))
 				{
 
-					int read = -1;
-					while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
+					byte[] buffer = new byte[4096];
+					if (reader != null)
 					{
-						_writer.Write(buffer, 0, read);
+
+						int read = -1;
+						while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
+						{
+							_writer.Write(buffer, 0, read);
+                            _writer.Flush();
+                        }
+						
+
+
 					}
-					_writer.Flush();
-
-
+					_writer.Close();
 				}
-				_writer.Close();
+			}catch(Exception ex)
+			{
+				SaveFileName = "";
+				PlayContinuous();
 			}
 		}
 
@@ -551,5 +617,11 @@ namespace BatRecordingManager
 
             handler(this, e);
         }
+
+		public event EventHandler<EventArgs> PlayStarted;
+
+		protected virtual void OnPlayStarted(EventArgs e)=>PlayStarted?.Invoke(this, e);
     }
+
+	
 }

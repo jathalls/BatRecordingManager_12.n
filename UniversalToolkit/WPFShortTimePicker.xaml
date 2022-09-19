@@ -1,0 +1,93 @@
+﻿<UserControl
+
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+    x:Class="UniversalToolkit.WPFShortTimePicker"
+
+    Height="Auto" Width="Auto" x:Name="UserControl">
+
+    
+
+
+
+    <Grid x:Name="LayoutRoot" Width="Auto" Height="Auto">
+
+        <Grid.ColumnDefinitions>
+
+           
+
+            <ColumnDefinition Width="100*"/>
+
+            <ColumnDefinition Width="10"/>
+
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="10"/>
+
+        </Grid.ColumnDefinitions>
+
+        
+
+        <Grid  Grid.Column="0" x:Name="min" Focusable="True" KeyDown="Down">
+
+            <TextBlock  
+                x:Name="ddTxt"  
+                TextWrapping="Wrap" 
+                Text="{Binding Path=Minutes, ElementName=UserControl, Mode=Default,StringFormat=##00}"
+                        
+                IsEnabled="{Binding IsReadOnly}"
+
+                TextAlignment="Right" 
+                VerticalAlignment="Center"  
+                FontSize="14"/>
+
+        </Grid>
+
+        <Grid  Grid.Column="1">
+
+            <TextBlock 
+                x:Name="sep2"  
+                TextWrapping="Wrap" 
+                VerticalAlignment="Center" 
+                Background="{x:Null}" 
+
+                FontSize="14" 
+                Text="'" 
+                TextAlignment="Center"/>
+
+        </Grid>
+
+        <Grid  Grid.Column="2" Name="sec" Focusable="True" KeyDown="Down">
+
+            <TextBlock 
+                x:Name="yyTxt"  
+                TextWrapping="Wrap" 
+                Text="{Binding Path=Seconds, ElementName=UserControl, Mode=Default,StringFormat=#0.00}"
+                    
+                IsEnabled="{Binding IsReadOnly}"
+                TextAlignment="Left" 
+                VerticalAlignment="Center"  
+                FontSize="14"/>
+
+        </Grid>
+
+        <Grid  Grid.Column="3">
+
+            <TextBlock 
+                x:Name="sepSec"  
+                TextWrapping="Wrap" 
+                VerticalAlignment="Center" 
+                Background="{x:Null}" 
+
+                FontSize="14" 
+                Text='"' 
+                TextAlignment="Center"/>
+
+        </Grid>
+
+
+
+    </Grid>
+
+</UserControl>

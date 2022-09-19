@@ -52,14 +52,14 @@
     <PackageReference Include="LiveCharts.Wpf.Core" Version="0.9.8" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="6.0.5" />
-    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.2.3194" />
+    <PackageReference Include="Microsoft.VisualStudio.Language" Version="17.3.198" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.36" />
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.53" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="17.0.64" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="6.0.0-preview.5.21301.5" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Serilog" Version="2.11.0" />
-    <PackageReference Include="Shiny.Core" Version="2.5.5" />
+    <PackageReference Include="Shiny.Core" Version="2.6.1" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.6.0-preview3.19128.7" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902">
       <PrivateAssets>all</PrivateAssets>
@@ -89,5 +89,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="WPFShortTimePicker.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 </Project>

@@ -14,7 +14,7 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
 
-        <DockPanel>
+        <DockPanel Grid.Row="0">
             
             <StackPanel x:Name="sliderPanel"
                     Orientation="Horizontal"
@@ -95,21 +95,91 @@
 
             </StackPanel>
 
-            <sp1:WpfPlot 
-                x:Name="wpfPlot" 
-            
-                />
+            <Grid x:Name="PlotsGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="1"/>
+
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="100*"/>
+                </Grid.ColumnDefinitions>
+
+                <sp1:WpfPlot 
+                    x:Name="wpfPlot" 
+                    Grid.Column="1"
+                    VerticalAlignment="Stretch"
+                    Grid.Row="0" 
+                    PreviewTextInput="wpfPlot_PreviewTextInput"
+                    />
+
+                <StackPanel Orientation="Vertical" Grid.Column="0" >
+                    <Button
+                        x:Name="ZoomInButton"
+                        Content="+"
+                        Margin="2,50,2,0"
+                        Height="60"
+                        ToolTip="Zooms in the frequency axis, but always fom 0-fMax"
+                        Width="40" FontWeight="Bold" FontSize="30"
+                        VerticalContentAlignment="Center" Click="ZoomInButton_Click"
+                        >
+                        
+                    </Button>
+                    <Button
+                        x:Name="ZoomOutButton"
+                        Content="-"
+                        Margin="2,50,2,0"
+                        Height="60"
+                        ToolTip="Zooms out the frequency axis, but always 0-fMax"
+                        Width="40" FontWeight="Bold" FontSize="30" 
+                        VerticalContentAlignment="Center" Click="ZoomOutButton_Click"
+                        />
+                    <Button
+                        x:Name="ZoomFreeButton"
+                        Content="Free"
+                        Margin="2,50,2,0"
+                        Height="40"
+                        Width="40"
+                        ToolTip="Frees both axes - Zoom with the mouse wheel, pan by mouse drag.  'Zoom To Fit Data' to restore"
+                        VerticalContentAlignment="Center"
+                        FontWeight="Bold" FontSize="14" Click="ZoomFreeButton_Click"
+                        />
+                </StackPanel>
+
+            </Grid>
+
+
+
+
         </DockPanel>
         <StackPanel
             x:Name="buttonPanel"
             Grid.Row="1"
+            HorizontalAlignment="Stretch"
             Orientation="Horizontal">
+            <Button
+                x:Name="PlayButton"
+                Content="PLAY"
+                Margin="5,0"
+                HorizontalAlignment="Left"
+                Style="{StaticResource SimpleButton}" Click="PlayButton_Click"
+                />
+            <Button
+                x:Name="SettingsButton"
+                Content="Settings"
+                Margin="5,0"
+                HorizontalAlignment="Left"
+                Visibility="Hidden"
+                Style="{StaticResource SimpleButton}"
+                Width="60"
+                />
             <Button
                 x:Name="closeButton"
                 Content="CLOSE" 
                 Margin="5,0"
                 Style="{StaticResource SimpleButton}"
-                Click="closeButton_Click"
+                Click="closeButton_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center"
                 />
 
         </StackPanel>

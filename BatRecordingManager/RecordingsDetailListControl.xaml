@@ -52,10 +52,10 @@
 
                                                 <MenuItem x:Name="miRecDisplayMetaData" Header="MetaData" IsEnabled="{Binding Path=hasMetadata}"
                                                         ToolTip="Displays wamd/guano metadata for this recording" Click="miDisplayMetaData_Click" />
-                                                <MenuItem
+                                                <!--<MenuItem
                                                     x:Name="cmiGenerateSpectrograms"
                                                     Header="Generate Spectrograms"
-                                                    ToolTip="Generates and displays spectrograms for all segments" Click="cmiGenerateSpectrograms_Click" />
+                                                    ToolTip="Generates and displays spectrograms for all segments" Click="cmiGenerateSpectrograms_Click" /> -->
                                             </ContextMenu>
                                         </TextBlock.ContextMenu>
                                     </TextBlock>
