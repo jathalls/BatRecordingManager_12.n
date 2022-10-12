@@ -4176,7 +4176,9 @@ matched {matchingRecording?.RecordingName}
         /// <param name="segment"></param>
         internal static LabelledSegment UpdateLabelledSegment(LabelledSegment segment)
         {
+            bool commentChanged = false;
             LabelledSegment existingsegment = null;
+            BatList batList = new BatList();
             try
             {
                 var dc = GetDataContext();
@@ -4188,7 +4190,10 @@ matched {matchingRecording?.RecordingName}
                 {
                     existingsegment.StartOffset = segment.StartOffset;
                     existingsegment.EndOffset = segment.EndOffset;
-                    existingsegment.Comment = segment.Comment;
+                    //existingsegment.Comment = segment.Comment;
+                    batList = GetDescribedBats(segment.Comment, out string moddedComment);
+                    if (existingsegment.Comment != moddedComment) commentChanged = true;
+                    existingsegment.Comment = moddedComment;
 
                     string callString = "";
                     if (!existingsegment.SegmentCalls.IsNullOrEmpty())
@@ -4204,10 +4209,20 @@ matched {matchingRecording?.RecordingName}
                     }
                     else
                     {
-                        existingsegment.Comment += $" {{{callString}}}";
+                        if(!string.IsNullOrWhiteSpace(callString))
+                            existingsegment.Comment += $" {{{callString}}}";
                     }
 
                     dc.SubmitChanges();
+
+                    if (commentChanged)
+                    {
+                        existingsegment.CommentModified(batList, dc);
+                        PopulateBatSessionLinkTableForSession(existingsegment.Recording?.RecordingSession,dc);
+                    }
+
+                    
+                    
                     return (existingsegment);
                 }
             }

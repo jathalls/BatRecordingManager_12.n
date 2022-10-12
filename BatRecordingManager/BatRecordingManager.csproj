@@ -3,7 +3,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <AssemblyVersion>12.3.*</AssemblyVersion>
+    <AssemblyVersion>12.4.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <BuildToolsFxCopVersion>1.0.1</BuildToolsFxCopVersion>
     <PublishUrl>E:\Publish\</PublishUrl>

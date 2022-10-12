@@ -23,6 +23,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+
 using Path = System.IO.Path;
 using Timer = System.Windows.Forms.Timer;
 
@@ -154,8 +155,53 @@ namespace BatRecordingManager
         private static void SpectrogramWindowInstance_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Debug.WriteLine("Spectrogram window closing");
+            var window = sender as SpectrogramWindow;
+            if(window?.hasChanged??false)
+            {
+                //var result = MessageBox.Show("Save Changes?", "Labels Have been altered", MessageBoxButtons.YesNo);
+                //var mb = new System.Windows.MessageBox.Show("Save changes?", "Labels have been altered", MessageBoxButton.YesNoCancel);
+
+
+                var result = System.Windows.MessageBox.Show("Save Changes?","Label has been altered!",MessageBoxButton.YesNoCancel);
+                if (result==MessageBoxResult.Yes)
+                {
+                    window.SaveChanges();
+                    
+                }
+                else
+                {
+                    Debug.WriteLine("Don't save changes");
+                }
+
+            }
             
         }
+
+        /// <summary>
+        /// If the sonagram is of a segment rather than a file, modifies the labelled segment and writes
+        /// the changes back to the database, leaving the associated text file unchanged.  This follows the practice adopted
+        /// in editing a labelled segment in the BRM view window.
+        /// </summary>
+        /// 
+        private void SaveChanges()
+        {
+            
+            
+            var newLabel = "";
+            foreach(var brack in brackets)
+            {
+                newLabel += $"\n{brack.Label}";
+            }
+            while (newLabel.StartsWith("\n")) { newLabel=newLabel.Substring(1); }
+            sonagramGenerator.segment.Comment = newLabel;
+            sonagramGenerator.segment.Comment = newLabel;
+            DBAccess.UpdateLabelledSegment(sonagramGenerator.segment);// fails to update the bat list
+            sonagramGenerator.segment.CommentModified();
+            
+        }
+
+        public event EventHandler<EventArgs> SegmentChanged;
+        protected virtual void OnSegmentChanged(EventArgs e)=>SegmentChanged?.Invoke(this, e);
 
         private void closeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -282,10 +328,17 @@ namespace BatRecordingManager
                 wpfPlot.Plot.YAxis.LockLimits(false);
                 var lims = wpfPlot.Plot.GetAxisLimits();
                 wpfPlot.Plot.SetAxisLimits(lims.XMin, lims.XMax, lims.YMin - 60, lims.YMax);
-
+                List<(TimeSpan start,TimeSpan end,string label)> labelList = null;
                 Debug.WriteLine($"Labels:- dispStart={displayedStartInFile}, dispEnd={displayedEndInFile} Lims={lims.YMin},{lims.YMax}");
-
-                var labelList = GetLabels(textFile, displayedStartInFile, displayedEndInFile);
+                if (sonagramGenerator.segment == null)
+                {
+                    labelList = GetLabels(textFile, displayedStartInFile, displayedEndInFile);
+                }
+                else
+                {
+                    labelList = new List<(TimeSpan start, TimeSpan end, string label)>();
+                    labelList.Add(new(displayedStartInFile, displayedEndInFile, sonagramGenerator.segment.Comment));
+                }
                 labelList = labelList.OrderBy(listItem => listItem.start).ToList();
                 List<TimeSpan> rowLimits = new List<TimeSpan>();
                 rowLimits.Add(labelList[0].start);
@@ -298,9 +351,9 @@ namespace BatRecordingManager
                     {
                         if (label.start >= rowLimits[i])
                         {
-                            wpfPlot.Plot.AddBracket((label.start - displayedStartInFile).TotalSeconds, -5.0d + (i*-15.0d),
-                                (label.end - displayedStartInFile).TotalSeconds, -5.0d+(i*-15.0d), label.label);
-                            
+                            var brack=wpfPlot.Plot.AddBracket((label.start - displayedStartInFile).TotalSeconds, -5.0d + (i*labelHeight),
+                                (label.end - displayedStartInFile).TotalSeconds, -5.0d+(i*labelHeight), label.label);
+                            brackets.Add(brack);
                             rowLimits[i] = label.end;
                             
                             break;
@@ -311,9 +364,9 @@ namespace BatRecordingManager
                     { // we did not add the label as it overlaps everything
                         rowLimits.Add(label.end);
                         spaceForLabels += 15;
-                        var brack=wpfPlot.Plot.AddBracket((label.start - displayedStartInFile).TotalSeconds, -5.0d + (i * -15.0d),
-                            (label.end - displayedStartInFile).TotalSeconds, -5.0d + (i * -15.0d), label.label);
-                        
+                        var brack=wpfPlot.Plot.AddBracket((label.start - displayedStartInFile).TotalSeconds, -5.0d + (i * labelHeight),
+                            (label.end - displayedStartInFile).TotalSeconds, -5.0d + (i * labelHeight), label.label);
+                        brackets.Add(brack);
                         
 
                     }
@@ -333,7 +386,12 @@ namespace BatRecordingManager
 
         }
 
+        private List<Bracket> brackets = new List<Bracket>();
+
+        
+
         private double spaceForLabels = 30;
+        private const  double labelHeight= -15.0d;
 
         private List<(TimeSpan start, TimeSpan end, string label)> GetLabels(string textFile, TimeSpan displayedStartInFile, TimeSpan displayedEndInFile)
         {
@@ -645,9 +703,50 @@ namespace BatRecordingManager
             }
         }
 
-        private void wpfPlot_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void wpfPlot_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Debug.WriteLine($"Text entered={e.Text}");
+            
+        }
+
+        private bool hasChanged = false;
+
+        private void wpfPlot_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Debug.WriteLine($"Mouse down at {e.GetPosition(wpfPlot).X},{e.GetPosition(wpfPlot).Y}");
+
+            var mouseAt = wpfPlot.GetMouseCoordinates();
+
+            foreach (var brack in brackets)
+            {
+
+
+                if (mouseAt.x > brack.X1 && mouseAt.x < brack.X2 && mouseAt.y < brack.Y1 && mouseAt.y > (brack.Y1 + labelHeight))
+                {
+                    Debug.WriteLine($"hit at {brack.Label}");
+
+                    var brackPix=wpfPlot.Plot.GetPixel((brack.X1 + brack.X2) / 2, brack.Y1);
+                    var mousePos=e.GetPosition(wpfPlot);
+
+                    Debug.WriteLine($"clickd = {mouseAt.x},{mouseAt.y}  brack = {brack.X1}-{brack.X2},{brack.Y1},{brack.Y2}");
+                    var editable = new TextEditWindow();
+                    editable.textEditBlock.Text = brack.Label;
+                    editable.Owner = this;
+                    editable.Left = this.Left + mousePos.X-(editable.Width/2.0d);
+                    editable.Top = this.Top + mousePos.Y;
+                    if (editable.ShowDialog() ?? false)
+                    {
+                        brack.Label = editable.textEditBlock.Text;
+                        Debug.WriteLine($"new label={brack.Label}");
+                        hasChanged = true;
+                        wpfPlot.Refresh();
+                    }
+                }
+            }
+
+
+            e.Handled = false;
         }
     }
+
+    
 }

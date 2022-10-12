@@ -689,7 +689,7 @@ namespace BatRecordingManager
                 Recording recording = RecordingsListView?.SelectedItem as Recording;
                 List<LabelledSegment> segments = recording.LabelledSegments.ToList();
                 SegmentSonagrams sonagramGenerator = new SegmentSonagrams();
-                sonagramGenerator.GenerateForSegments(segments);
+                sonagramGenerator.GenerateForSegments(ref segments);
             }
         }
 
@@ -906,13 +906,24 @@ namespace BatRecordingManager
             if (!e.Handled)
             {
                 e.Handled = true;
+                if(e.RemovedItems!=null && e.RemovedItems.Count > 0)
+                {
+                    foreach(var item in e.RemovedItems)
+                    {
+                        var segment = item as LabelledSegment;
+                        segment.CommentChanged -= Seg_CommentChanged;
+                        
+                    }
+                }
+                
                 if (e.AddedItems != null && e.AddedItems.Count > 0)
                 {
                     var selectedSegment = e.AddedItems[e.AddedItems.Count - 1] as LabelledSegment;
+                    
                     var lvSender = sender as ListView;
-
-                    Debug.WriteLine("LabelledSegmentListView_SelectionChanged:- Selected <" + selectedSegment.Comment +
-                                    ">");
+                    selectedSegment.CommentChanged-= Seg_CommentChanged;
+                    selectedSegment.CommentChanged += Seg_CommentChanged;
+                    
                     var images = selectedSegment.GetImageList();
                     OnSegmentSelectionChanged(new ImageListEventArgs(selectedSegment, images));
 
@@ -942,6 +953,16 @@ namespace BatRecordingManager
                     _selectedSegment = null;
                 }
             }
+        }
+
+        private void SelectedSegment_CommentChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void Segment_CommentChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void LabelledSegmentTextBlock_MouseEnter(object sender, MouseEventArgs e)
@@ -1096,7 +1117,7 @@ namespace BatRecordingManager
                         segList.Add(sel);
                         BitmapSource bmps = deepAnalyser.GetImage();
                         var sonagramGenerator = new SegmentSonagrams();
-                        var image = sonagramGenerator.GenerateForSegment(sel, deepAnalyser.param,filterParams: filterParams,display: display);
+                        var image = sonagramGenerator.GenerateForSegment(ref sel, deepAnalyser.param,filterParams: filterParams,display: display);
                             
 
                         //sel = DBAccess.GetLabelledSegment(sel.Id);
@@ -1228,9 +1249,24 @@ namespace BatRecordingManager
             {
                 var recordingId = (selection?.First()?.RecordingID) ?? -1;
                 SegmentSonagrams sonagramGenerator = new SegmentSonagrams();
-                sonagramGenerator.GenerateForSegments(selection, experimental,display:DisplayMode.ALWAYS);
+                foreach(var seg in selection)
+                {
+                    seg.CommentChanged -= Seg_CommentChanged;
+                    seg.CommentChanged += Seg_CommentChanged;   
+                }
+                sonagramGenerator.GenerateForSegments(ref selection, experimental,display:DisplayMode.ALWAYS);
+                
                 SpectrogramWindow.Display(sonagramGenerator);
-                UpdateRecordingsList(recordingId);
+                //UpdateRecordingsList(recordingId);
+            }
+        }
+
+        private void Seg_CommentChanged(object sender, EventArgs e)
+        {
+            LabelledSegment seg = sender as LabelledSegment;
+            if (seg != null)
+            {
+                UpdateRecordingsList(seg.RecordingID);
             }
         }
 

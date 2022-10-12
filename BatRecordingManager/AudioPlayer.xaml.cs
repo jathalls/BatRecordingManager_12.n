@@ -94,7 +94,7 @@ namespace BatRecordingManager
             pli.segmentDuration=segmentToAdd.Duration()??new TimeSpan();
             pli.segmentOffset = segmentToAdd.StartOffset;
             var sonagramGenerator = new SegmentSonagrams();
-            var si=sonagramGenerator.GenerateForSegment(segmentToAdd, display: SegmentSonagrams.DisplayMode.ALWAYS);
+            var si=sonagramGenerator.GenerateForSegment(ref segmentToAdd, display: SegmentSonagrams.DisplayMode.ALWAYS);
             SpectrogramWindow.Display(sonagramGenerator,pli);
 
             if(si!=null)
@@ -184,7 +184,8 @@ namespace BatRecordingManager
                 StoredImage si = null;
                 if (pli.segment != null && pli.segment.Recording != null)
                 {
-                    si = sgi.GenerateForSegment(pli.segment, display: SegmentSonagrams.DisplayMode.ALWAYS);
+                    var seg = pli.segment;
+                    si = sgi.GenerateForSegment(ref seg, display: SegmentSonagrams.DisplayMode.ALWAYS);
                 }
                 else
                 {

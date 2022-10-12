@@ -20,16 +20,17 @@ namespace BatRecordingManager
     {
         public List<double[]> Ffts { get; private set; }
 
-        public bool GenerateForSegments(List<LabelledSegment> segmentList, bool experimental = false,DisplayMode display = DisplayMode.NONE)
+        public bool GenerateForSegments(ref List<LabelledSegment> segmentList, bool experimental = false,DisplayMode display = DisplayMode.NONE)
         {
             if (segmentList != null && segmentList.Any())
             {
-                foreach (var seg in segmentList)
+                for (int i=0;i<segmentList.Count();i++) 
                 {
+                    var seg = segmentList[i];
                     if (seg.BatSegmentLinks?.Any() ?? false)
                     {
                         ObservableCollection<StoredImage> imageList = new ObservableCollection<StoredImage>();
-                        StoredImage spectrogram = GenerateSpectrogram(seg, experimental: experimental, display: display);
+                        StoredImage spectrogram = GenerateSpectrogram(ref seg, experimental: experimental, display: display);
                         if (spectrogram != null)
                         {
                             imageList.Add(spectrogram);
@@ -42,15 +43,15 @@ namespace BatRecordingManager
             return (false);
         }
 
-        public Task<bool> GenerateForSegmentsAsync(List<LabelledSegment> segments)
+        public Task<bool> GenerateForSegmentsAsync( List<LabelledSegment> segments)
         {
-            return (Task.Run(() => GenerateForSegments(segments)));
+            return (Task.Run(() => GenerateForSegments(ref segments)));
         }
 
-        internal StoredImage GenerateForSegment(LabelledSegment sel, Parametrization param = null, 
+        internal StoredImage GenerateForSegment(ref LabelledSegment sel, Parametrization param = null, 
             FilterParams filterParams = null, DisplayMode display = DisplayMode.NONE)
         {
-            return (GenerateSpectrogram(sel, param, filterParams: filterParams, display: display));
+            return (GenerateSpectrogram(ref sel, param, filterParams: filterParams, display: display));
         }
 
         async internal void GenerateForSession(RecordingSession selectedSession)
@@ -192,7 +193,7 @@ namespace BatRecordingManager
         /// <param name="param">instance of Parametrization for extracting numerical data</param>
         /// <param name="experimental">boolean - true gives a spectrogram with hyerbolic (1/f) frequency axis</param>
         /// <returns></returns>
-        private StoredImage GenerateSpectrogram(LabelledSegment seg, Parametrization param = null,
+        private StoredImage GenerateSpectrogram(ref LabelledSegment seg, Parametrization param = null,
             bool experimental = false, decimal percentOverlap = -1.0m,
             FilterParams filterParams = null, DisplayMode display = DisplayMode.NONE)
         {
@@ -208,7 +209,8 @@ namespace BatRecordingManager
                 if (string.IsNullOrWhiteSpace(seg.Comment) || seg.Comment.Contains("No Bats")) return (null);
                 if (seg.BatSegmentLinks == null || seg.BatSegmentLinks.Count <= 0) return (null);
             }
-            StoredImage si = DBAccess.GetSpectrogramForSegment(seg); // retrieve if already exists in the database
+            //StoredImage si = DBAccess.GetSpectrogramForSegment(seg); // retrieve if already exists in the database
+            StoredImage si = null;
             if (si == null || display!=DisplayMode.NONE)
             {
                 double FFTAdvance = 0.0d;
@@ -226,6 +228,7 @@ namespace BatRecordingManager
 
 
             }
+            
             return (si);
         }
 

@@ -25,6 +25,9 @@
     <Compile Update="SpectrogramWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="TextEditWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Update="DataClasses1.dbml">
@@ -39,6 +42,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="SpectrogramWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="TextEditWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

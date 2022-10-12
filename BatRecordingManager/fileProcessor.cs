@@ -113,6 +113,7 @@ namespace BatRecordingManager
         ///     Creates a SegmentAndBatList item using the provided labelledSegment.
         ///     The SegmentAndBatList contains the provided segment and a list of all
         ///     the bats referenced by the segment comment.
+        ///     Updates the labelledSegment.
         /// </summary>
         /// <param name="segment"></param>
         /// <returns></returns>

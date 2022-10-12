@@ -23,6 +23,7 @@ using System.Data.Linq;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
@@ -507,6 +508,48 @@ namespace BatRecordingManager
             }
         }
 
+        /// <summary>
+        /// Should be called if the segment comment has been changed and the database has been updated to the new
+        /// comment.  This function gets the described bats and updates the segment to bat links to match the new
+        /// comment and also raises a comment changed event so the front end displays can update themselves if necessary.
+        /// 
+        /// </summary>
+        public void CommentModified(BatList batList,BatReferenceDBLinqDataContext dc)
+        {
+            //batList = DBAccess.GetDescribedBats(Comment, out string moddedDescription);
+            var linksToRemove = BatSegmentLinks.Where(link => !batList.bats.Where(bat=>bat.Id==link.BatID).Any()).ToList();
+            for(int i=linksToRemove.Count()-1;i>=0;i--)
+            {
+                dc.BatSegmentLinks.DeleteOnSubmit(linksToRemove[i]);
+            }
+            dc.SubmitChanges();
+            var batsToAdd = batList.bats.Where(bat => !BatSegmentLinks.Select(link => link.Bat.Id).Contains(bat.Id));
+            foreach(var bat in batsToAdd)
+            {
+                BatSegmentLink link = new BatSegmentLink();
+                link.BatID = bat.Id;
+                link.LabelledSegmentID = this.Id;
+                link.Id = -1;
+                dc.BatSegmentLinks.InsertOnSubmit(link);
+
+            }
+            try
+            {
+                dc.SubmitChanges();
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ERROR - unable to change bat segment links:- " + ex.Message);
+            }
+            finally
+            {
+                Debug.WriteLine("finally");
+                OnCommentChanged(EventArgs.Empty);
+            }
+            Debug.WriteLine("ended");
+        }
+
         public bool isConfidenceLow
         {
             get
@@ -664,6 +707,16 @@ namespace BatRecordingManager
                 return (startTime + new TimeSpan(1, 0, 0, 0) - TimeSpan.FromMinutes(refTimeMinutesSinceMidnight));
             return (startTime - TimeSpan.FromMinutes(refTimeMinutesSinceMidnight));
         }
+
+        public void CommentModified()
+        {
+            OnCommentChanged(EventArgs.Empty);
+        }
+
+
+        public event EventHandler<EventArgs> CommentChanged;
+        
+        protected virtual void OnCommentChanged(EventArgs e)=>CommentChanged?.Invoke(this, e);
 
         private TimeSpan _endTime = new TimeSpan();
         private DateTime? _startDateTime = null;

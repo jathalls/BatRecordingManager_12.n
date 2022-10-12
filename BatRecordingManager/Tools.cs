@@ -1126,7 +1126,7 @@ namespace BatRecordingManager
                 }
             }
             var absStart = (segment.Recording.RecordingDate ?? new DateTime()).TimeOfDay + segment.StartOffset;
-            Debug.WriteLine($"rec {segment.Recording.RecordingStartTime ?? new TimeSpan()} + {segment.StartOffset} = {absStart}");
+            //Debug.WriteLine($"rec {segment.Recording.RecordingStartTime ?? new TimeSpan()} + {segment.StartOffset} = {absStart}");
             var result = absStart.ToString(@"hh\:mm\:ss\.f") + " ; " +
                          (!offsetIntoRecording ? "SS + " : "") +
                          FormattedTimeSpan(start) + " - " +

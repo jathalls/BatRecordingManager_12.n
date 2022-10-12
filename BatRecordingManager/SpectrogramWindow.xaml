@@ -110,8 +110,8 @@
                     x:Name="wpfPlot" 
                     Grid.Column="1"
                     VerticalAlignment="Stretch"
-                    Grid.Row="0" 
-                    PreviewTextInput="wpfPlot_PreviewTextInput"
+                    Grid.Row="0" PreviewMouseLeftButtonDown="wpfPlot_PreviewMouseLeftButtonDown" PreviewMouseDoubleClick="wpfPlot_PreviewMouseDoubleClick" 
+                    
                     />
 
                 <StackPanel Orientation="Vertical" Grid.Column="0" >

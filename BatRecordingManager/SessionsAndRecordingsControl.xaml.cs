@@ -532,7 +532,7 @@ namespace BatRecordingManager
                         if (!segList.IsNullOrEmpty())
                         {
                             SegmentSonagrams sonagramGenerator = new SegmentSonagrams();
-                            sonagramGenerator.GenerateForSegments(segList);
+                            sonagramGenerator.GenerateForSegments(ref segList);
                         }
                     }
                     this.RefreshParentData();
@@ -559,7 +559,7 @@ namespace BatRecordingManager
                         if (segList != null && segList.Any())
                         {
                             SegmentSonagrams sonagramGenerator = new SegmentSonagrams();
-                            sonagramGenerator.GenerateForSegments(segList);
+                            sonagramGenerator.GenerateForSegments(ref segList);
                         }
                     }
                     this.RefreshParentData();
