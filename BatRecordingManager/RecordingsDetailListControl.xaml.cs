@@ -955,15 +955,7 @@ namespace BatRecordingManager
             }
         }
 
-        private void SelectedSegment_CommentChanged(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void Segment_CommentChanged(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         private void LabelledSegmentTextBlock_MouseEnter(object sender, MouseEventArgs e)
         {
@@ -1254,6 +1246,7 @@ namespace BatRecordingManager
                     seg.CommentChanged -= Seg_CommentChanged;
                     seg.CommentChanged += Seg_CommentChanged;   
                 }
+                sonagramGenerator.segment = selection.FirstOrDefault();
                 sonagramGenerator.GenerateForSegments(ref selection, experimental,display:DisplayMode.ALWAYS);
                 
                 SpectrogramWindow.Display(sonagramGenerator);

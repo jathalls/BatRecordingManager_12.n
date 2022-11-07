@@ -19,6 +19,9 @@
     </StartArguments>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="DataTable.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="FilterSelectionDialog.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -28,6 +31,9 @@
     <Compile Update="TextEditWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="TimeAnalysisWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Update="DataClasses1.dbml">
@@ -35,6 +41,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="DataTable.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="FilterSelectionDialog.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -45,6 +54,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="TextEditWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="TimeAnalysisWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

@@ -252,17 +252,17 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ToDo.txt" />
+    <Resource Include="TextFiles\ToDo.txt" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Worksheet11.txt" />
-    <Resource Include="Worksheet10.txt" />
-    <Resource Include="weather.txt" />
-    <Resource Include="AnalyseAndImportClass.txt" />
+    <Resource Include="TextFiles\Worksheet11.txt" />
+    <Resource Include="TextFiles\Worksheet10.txt" />
+    <Resource Include="TextFiles\weather.txt" />
+    <Resource Include="TextFiles\AnalyseAndImportClass.txt" />
     <AdditionalFiles Include="Pelfusion-Flat-Folder-Tick-Folder.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </AdditionalFiles>
@@ -282,19 +282,19 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AutoVersionUpdater.txt</LastGenOutput>
     </Content>
-    <Resource Include="Worksheet-DynamicImport.txt" />
+    <Resource Include="TextFiles\Worksheet-DynamicImport.txt" />
     <Resource Include="Properties\AutoVersionUpdater.txt">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AutoVersionUpdater.tt</DependentUpon>
     </Resource>
-    <Resource Include="worksheet.txt" />
-    <Resource Include="EditBatForm.txt" />
-    <Resource Include="Structure-Visual.txt" />
+    <Resource Include="TextFiles\worksheet.txt" />
+    <Resource Include="TextFiles\EditBatForm.txt" />
+    <Resource Include="TextFiles\Structure-Visual.txt" />
     <Resource Include="BRMIcon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Readme_UpdateControls_Snippets.txt" />
+    <Resource Include="TextFiles\Readme_UpdateControls_Snippets.txt" />
   </ItemGroup>
   
   <ItemGroup>

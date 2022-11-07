@@ -1,0 +1,58 @@
+﻿RecordingsDetailListControl.miGenerateSpectrograms_Click()
+	GetSelectedSegments()
+	new SegmentSonagrams()
+		seg.CommentChanged+=Seg_CommentChanged
+		sonagramGenerator.segment=selected segment
+		sonagramGenerator.GenerateForSegments(selection,experimental,DiasplayMode:ALWAYS)
+		SpectrogramWindow.Display(sonagramGenerator)
+
+SegmentSonagrams
+	GenerateForSegments()
+		foreach(segment with BatSegmentLinks)
+			new ObservableCollection<StoredImage>()
+			StoredImage spectrogram=GenerateSpectrogram()
+				fileName=segment.Recording.GetFileName()
+				result=Generate()
+					settings=UTSettings.getSettings()
+					data=GetDataSG()
+					sg=new SpectrogramGenerator()
+					sg.Add(data.audio)
+					ft=sg.GetFFTs()
+					bmp=sg.GetBitmap()
+					bmp=DeepAnalysis.decorateBitmap()
+					result=new StoredImage(bmp)
+			imageList.Add(spectrogram)
+			DBAccess.UpdateSegmentImages()
+
+SpectrogramWindow.Display(sonagramGenerator,playListItem)
+	spectrogramWindow=new SpectrogramWindow()
+	spectrogramWindow.Closing+=SpectrogramWindowInstance_Closing
+	spectrogramWindow.Closed+=SpectrogramWindowInstance_Closed
+	spectrogramWindow.sonagramGenerator=sonagramGenerator
+	spectrogramWindow.RegenSonagram()
+		using(new WaitCursor())
+			data=segmentSonagram?.Regen()
+			Update()
+				Plot.Clear()
+				Plot.AddHeatmap()
+				heatmap.Update()
+				Plot.AddColorbar()
+				Plot.AddCrossHair()
+				set Crosshair customFormatters
+				Plot.AddText()
+				set heatmap.Cell height and Width
+				Plot.AxisAuto()
+				Plot.Margins()
+				Plot.YAxisManualTickPositions()
+				Plot.YAxis.TickLabelFormat()
+				Plot.Grid()
+				Plot.YAxis.LockLimits()
+				Plot.Title()
+				UpdateLabelPlot()
+					Plot.YAxis.LockLimits(false)
+
+				wpfPlot.Refresh()
+	spectrogramWindow.Show()
+	spectrogramWindow.Update()
+	spectrogramWindow.setPlayListItem(playListItem)
+	spectrogramWindowList.add(spectrogramWindow);

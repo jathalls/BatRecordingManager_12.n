@@ -194,7 +194,7 @@ namespace BatRecordingManager
                 if (si != null)
                 {
                     pli.hasSpectrogram = true;
-                    SpectrogramWindow.Display(sonagramGenerator:sgi, pli: pli);
+                    SpectrogramWindow.Display(segmentSonagram:sgi, pli: pli);
                 }
                 
             }

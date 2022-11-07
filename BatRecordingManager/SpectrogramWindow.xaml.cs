@@ -1,4 +1,5 @@
-﻿using LinqStatistics;
+﻿using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
+using LinqStatistics;
 using MathNet.Numerics.LinearAlgebra.Storage;
 using NAudio.Wave;
 using ScottPlot;
@@ -9,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -99,7 +101,7 @@ namespace BatRecordingManager
         private static List<SpectrogramWindow> spectrogramWindowList = new List<SpectrogramWindow>();
         //private static SpectrogramWindow spectrogramWindow { get; set; } = null;
 
-        internal static void Display(SegmentSonagrams sonagramGenerator, PlayListItem pli = null)
+        internal static void Display(SegmentSonagrams segmentSonagram, PlayListItem pli = null)
         {
 
             if (spectrogramWindowList == null)
@@ -109,7 +111,7 @@ namespace BatRecordingManager
             var spectrogramWindow = new SpectrogramWindow();
             spectrogramWindow.Closing += SpectrogramWindowInstance_Closing;
             spectrogramWindow.Closed += SpectrogramWindowInstance_Closed;
-            spectrogramWindow.sonagramGenerator = sonagramGenerator;
+            spectrogramWindow.segmentSonagram = segmentSonagram;
 
 
             spectrogramWindow.heatMap = null;
@@ -135,13 +137,13 @@ namespace BatRecordingManager
         private double[,] data;
         private ScottPlot.Plottable.Heatmap heatMap;
 
-        private SegmentSonagrams sonagramGenerator = null;
+        private SegmentSonagrams segmentSonagram = null;
 
         private static void SpectrogramWindowInstance_Closed(object sender, EventArgs e)
         {
             SpectrogramWindow spectrogramWindow = sender as SpectrogramWindow;
             Debug.WriteLine("Spectrogram Window closed");
-            spectrogramWindow?.sonagramGenerator.Close();
+            spectrogramWindow?.segmentSonagram.Close();
             if (spectrogramWindow.currentPlayListItem != null)
             {
                 spectrogramWindow.currentPlayListItem.Close();
@@ -193,10 +195,10 @@ namespace BatRecordingManager
                 newLabel += $"\n{brack.Label}";
             }
             while (newLabel.StartsWith("\n")) { newLabel=newLabel.Substring(1); }
-            sonagramGenerator.segment.Comment = newLabel;
-            sonagramGenerator.segment.Comment = newLabel;
-            DBAccess.UpdateLabelledSegment(sonagramGenerator.segment);// fails to update the bat list
-            sonagramGenerator.segment.CommentModified();
+            segmentSonagram.segment.Comment = newLabel;
+            segmentSonagram.segment.Comment = newLabel;
+            DBAccess.UpdateLabelledSegment(segmentSonagram.segment);// fails to update the bat list
+            segmentSonagram.segment.CommentModified();
             
         }
 
@@ -213,6 +215,9 @@ namespace BatRecordingManager
         private double yMin = 0.0d;
         private double yMax = 0.0d;
         private double zoomedYmax = 0.0d;
+        private Crosshair ch2 = null;
+        private static (double x, double y) staticPos = (0, 0);
+        private Text txt = null;
         
         
         private void Update()
@@ -230,22 +235,29 @@ namespace BatRecordingManager
                 //heatMap.Update(data, max: max, min: min);
 
                 xMin = 0.0d;
-                xMax = (sonagramGenerator?.duration.TotalSeconds) ?? 1.0d;
+                xMax = (segmentSonagram?.duration.TotalSeconds) ?? 1.0d;
 
                 yMin = 0.0d;
-                yMax = ((double)((sonagramGenerator?.SampleRate) ?? 384000.0d)) / 2000.0d;
+                yMax = ((double)((segmentSonagram?.SampleRate) ?? 384000.0d)) / 2000.0d;
                 zoomedYmax = yMax;
 
                 //sonagramGenerator.GetRange(out double mindB, out double maxdB, out double rangedB);
 
                 heatMap = wpfPlot.Plot.AddHeatmap(data, ScottPlot.Drawing.Colormap.GrayscaleR, lockScales: false);
                 heatMap.Update(data, max: maxdB, min: mindB);
+                
 
                 var cb = wpfPlot.Plot.AddColorbar(heatMap);
 
                 ch = wpfPlot.Plot.AddCrosshair(0.0d, 0.0d);
-                ch.HorizontalLine.IsVisible = false;
-                ch.VerticalLine.IsVisible = false;
+                ch.HorizontalLine.IsVisible = true;
+                ch.VerticalLine.IsVisible = true;
+                ch.HorizontalLine.PositionFormatter = customFormatterY;
+                ch.VerticalLine.PositionFormatter = custonFormatterX;
+                ch.HorizontalLine.PositionLabelOppositeAxis = true;
+                ch.VerticalLine.PositionLabelOppositeAxis = true;
+
+                txt = wpfPlot.Plot.AddText("_", 0, 0);
 
                 heatMap.CellHeight = (double)yMax / (double)data.GetLength(0);
                 heatMap.CellWidth = (double)xMax / (double)data.GetLength(1);
@@ -275,13 +287,13 @@ namespace BatRecordingManager
                 wpfPlot.Plot.Grid(onTop: true);
                 heatMap.Smooth = SmoothingCheckBox.IsChecked ?? false;
 
-                string title = sonagramGenerator?.fileName ?? "";
-                if (sonagramGenerator?.segment != null)
+                string title = segmentSonagram?.fileName ?? "";
+                if (segmentSonagram?.segment != null)
                 {
-                    title += $": {sonagramGenerator.segment.StartDateTime} for {sonagramGenerator.segment.Duration()?.TotalSeconds.ToString() ?? "?"} secs";
+                    title += $": {segmentSonagram.segment.StartDateTime} for {segmentSonagram.segment.Duration()?.TotalSeconds.ToString() ?? "?"} secs";
                 }
 
-                wpfPlot.Plot.Title(title);
+                wpfPlot.Plot.Title(title+"\n'");
 
                 var dims = wpfPlot.Plot.XAxis.Dims;
 
@@ -312,10 +324,10 @@ namespace BatRecordingManager
         {
             
 
-            if (sonagramGenerator != null)
+            if (segmentSonagram != null)
             {
-                var startOffset=sonagramGenerator.startOffset;
-                var file=sonagramGenerator.fileName;
+                var startOffset=segmentSonagram.startOffset;
+                var file=segmentSonagram.fileName;
                 var textFile = Path.ChangeExtension(file, ".TXT");
                 if (!File.Exists(textFile))
                 {
@@ -330,14 +342,14 @@ namespace BatRecordingManager
                 wpfPlot.Plot.SetAxisLimits(lims.XMin, lims.XMax, lims.YMin - 60, lims.YMax);
                 List<(TimeSpan start,TimeSpan end,string label)> labelList = null;
                 Debug.WriteLine($"Labels:- dispStart={displayedStartInFile}, dispEnd={displayedEndInFile} Lims={lims.YMin},{lims.YMax}");
-                if (sonagramGenerator.segment == null)
+                if (segmentSonagram.segment == null)
                 {
                     labelList = GetLabels(textFile, displayedStartInFile, displayedEndInFile);
                 }
                 else
                 {
                     labelList = new List<(TimeSpan start, TimeSpan end, string label)>();
-                    labelList.Add(new(displayedStartInFile, displayedEndInFile, sonagramGenerator.segment.Comment));
+                    labelList.Add(new(displayedStartInFile, displayedEndInFile, segmentSonagram.segment.Comment));
                 }
                 labelList = labelList.OrderBy(listItem => listItem.start).ToList();
                 List<TimeSpan> rowLimits = new List<TimeSpan>();
@@ -519,12 +531,15 @@ namespace BatRecordingManager
 
             using (new WaitCursor())
             {
-                data = sonagramGenerator?.Regen(ftSize, ftAdvance);
-                
 
 
-                
-                if (data != null && heatMap!=null)
+                data = segmentSonagram?.Regen(ftSize, ftAdvance);
+
+
+
+
+
+                if (data != null && heatMap != null)
                 {
                     Update();
                 }
@@ -575,16 +590,16 @@ namespace BatRecordingManager
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             var lims = wpfPlot.Plot.GetAxisLimits();
-            if (sonagramGenerator == null) return;
-            string filename = sonagramGenerator.segment?.Recording?.GetFileName();
+            if (segmentSonagram == null) return;
+            string filename = segmentSonagram.segment?.Recording?.GetFileName();
             if (string.IsNullOrWhiteSpace(filename))
             {
-                filename = sonagramGenerator.fileName;
+                filename = segmentSonagram.fileName;
             }
-            var segmentOffset = sonagramGenerator.segment?.StartOffset;
+            var segmentOffset = segmentSonagram.segment?.StartOffset;
             if (segmentOffset == null)
             {
-                segmentOffset = TimeSpan.FromSeconds(sonagramGenerator.startOffset);
+                segmentOffset = TimeSpan.FromSeconds(segmentSonagram.startOffset);
             }
             if (!string.IsNullOrWhiteSpace(filename) && File.Exists(filename))
             {
@@ -594,7 +609,7 @@ namespace BatRecordingManager
                 if (currentPlayListItem == null)
                 {
                     var pli = PlayListItem.Create(filename, offset, duration, segmentOffset ?? offset,
-                        TimeSpan.FromSeconds(sonagramGenerator?.durationSecs ?? lims.XSpan),
+                        TimeSpan.FromSeconds(segmentSonagram?.durationSecs ?? lims.XSpan),
                          wfr.TotalTime, filename, null, hasSpectrogram: true);
                     setPlayListItem(pli);
                     
@@ -652,7 +667,7 @@ namespace BatRecordingManager
         private void ZoomInButton_Click(object sender, RoutedEventArgs e)
         {
             var lims = wpfPlot.Plot.GetAxisLimits();
-            if (ZoomFreeButton.Content == "Lock")
+            if ((ZoomFreeButton.Content as string) == "Lock")
             {
                 ZoomFreeButton_Click(sender, e);
                 if (lims.YMax < yMax) zoomedYmax = lims.YMax;
@@ -671,7 +686,7 @@ namespace BatRecordingManager
         private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
         {
             var lims = wpfPlot.Plot.GetAxisLimits();
-            if (ZoomFreeButton.Content == "Lock")
+            if ((ZoomFreeButton.Content as string) == "Lock")
             {
                 ZoomFreeButton_Click(sender, e);
                 if(lims.YMax<yMax) zoomedYmax = lims.YMax;
@@ -691,7 +706,7 @@ namespace BatRecordingManager
 
         private void ZoomFreeButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ZoomFreeButton.Content == "Free")
+            if ((ZoomFreeButton.Content as string) == "Free")
             {
                 wpfPlot.Plot.YAxis.LockLimits(false);
                 ZoomFreeButton.Content = "Lock";
@@ -712,9 +727,19 @@ namespace BatRecordingManager
 
         private void wpfPlot_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Debug.WriteLine($"Mouse down at {e.GetPosition(wpfPlot).X},{e.GetPosition(wpfPlot).Y}");
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                e.Handled = false;
+            }
+            else
+            {
+                e.Handled = true;
+            }
+            //Debug.WriteLine($"Mouse down at {e.GetPosition(wpfPlot).X},{e.GetPosition(wpfPlot).Y}");
 
             var mouseAt = wpfPlot.GetMouseCoordinates();
+
+            bool bracketed = false;
 
             foreach (var brack in brackets)
             {
@@ -723,6 +748,7 @@ namespace BatRecordingManager
                 if (mouseAt.x > brack.X1 && mouseAt.x < brack.X2 && mouseAt.y < brack.Y1 && mouseAt.y > (brack.Y1 + labelHeight))
                 {
                     Debug.WriteLine($"hit at {brack.Label}");
+                    bracketed = true;
 
                     var brackPix=wpfPlot.Plot.GetPixel((brack.X1 + brack.X2) / 2, brack.Y1);
                     var mousePos=e.GetPosition(wpfPlot);
@@ -742,10 +768,187 @@ namespace BatRecordingManager
                     }
                 }
             }
+            if (!bracketed)
+            {
+                var limits = wpfPlot.Plot.GetAxisLimits();
+                if (ch2 != null)
+                {
+                    wpfPlot.Plot.Remove(ch2);
+                    
+                    var here = wpfPlot.GetMouseCoordinates();
+                    
+                    var YMin = limits.YMin;
+                    if (limits.YMin < 0) YMin = 0;
+                    if (here.x < limits.XMax && here.x > limits.XMin && here.y > YMin && here.y < limits.YMax)
+                    {
+                        // the current point is inside the plottable area
+                        var xValue = here.x - staticPos.x;
+                        var yValue = here.y - staticPos.y;
+                        tableData.Add(Math.Abs(xValue), Math.Abs(yValue));
+                        Debug.WriteLine($"{xValue:F3} => {tableData.intervalMean:F3} of {tableData.Count} +/- {tableData.intervalSD:F3}");
+                    }
+                    staticPos = (limits.XMin, limits.YMin > 0 ? limits.YMin : 0);
+                    ch2 = null;
+                    if (txt != null)
+                    {
+                        wpfPlot.Plot.Remove(txt);
+                        txt = null;
+                    }
+                }
+                else
+                {
+                    var label = $"{mouseAt.x:F3}s, {mouseAt.y:F1}kHz";
+                    if (txt == null) txt = wpfPlot.Plot.AddText(label, mouseAt.x, mouseAt.y);
 
+                    ch2 = wpfPlot.Plot.AddCrosshair(mouseAt.x, mouseAt.y);
+                    txt.Label = label;
+                    txt.X = mouseAt.x;
+                    txt.Y = mouseAt.y;
+                    txt.FontBold = true;
+                    txt.Color = System.Drawing.Color.Red;
+                    txt.BackgroundColor = System.Drawing.Color.White;
+                    txt.BackgroundFill = true;
+                    txt.Alignment = ScottPlot.Alignment.LowerLeft;
 
-            e.Handled = false;
+                    staticPos = mouseAt;
+                    this.KeyDown -= SpectrogramWindow_KeyDown;
+                    this.KeyDown += SpectrogramWindow_KeyDown;
+
+                }
+                wpfPlot.Refresh();
+            }
+
+            
         }
+
+        private void SpectrogramWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (ch2 != null && txt != null && e.Key == Key.T)
+            {
+                e.Handled = true;
+                var here = wpfPlot.GetMouseCoordinates();
+                var limits = wpfPlot.Plot.GetAxisLimits();
+                var YMin = limits.YMin;
+                if (limits.YMin < 0) YMin = 0;
+                if (here.x < limits.XMax && here.x > limits.XMin && here.y > YMin && here.y < limits.YMax)
+                {
+                    // the current point is inside the plottable area
+                    var xValue = here.x - staticPos.x;
+                    var yValue = here.y - staticPos.y;
+                    tableData.Add(xValue, yValue);
+                    Debug.WriteLine($"{xValue:F3} of {tableData.Count} +/- {tableData.intervalSD:F3}");
+                }
+            }
+        }
+
+        private static string custonFormatterX(double position)
+        {
+            var x = position - staticPos.x;
+            string text = "s";
+            if (x < 1.0d)
+            {
+                x = x * 1000;
+                text = "ms";
+            }
+            return ($"{x:F3} {text}");
+        }
+
+        private static string customFormatterY(double position)
+        {
+            return ($"{(int)(position-staticPos.y)}kHz");
+        }
+
+        /// <summary>
+        /// Updates the position of the cross hairs and the displayed co-ordinates
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void wpfPlot_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            var mouseAt = wpfPlot.GetMouseCoordinates();
+            ch.X = mouseAt.x;
+            ch.Y = mouseAt.y;
+            if (ch2 != null && txt!=null)
+            {
+                var dx=ch.X - ch2.X;
+                var dy=ch.Y - ch2.Y;
+                txt.X = ch.X;
+                txt.Y = ch.Y;
+                
+                txt.Label = dx < 1 ? $"   {dx*1000:F0}ms, {dy:F1}kHz" :
+                    $"{dx:F3}s, {dy:F1}kHz";
+                
+            }
+
+            wpfPlot.Refresh();
+            e.Handled = false;
+
+
+        }
+
+        /// <summary>
+        /// Takes the data in the current window, and filters hard at the displayed frequency limits (if zoomed in)
+        /// Then performs an autocorrelation on the envelope of the resulting waveform.  Finally displays a table
+        /// showing the values of the dominant peaks.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AnalysisButton_Click(object sender, RoutedEventArgs e)
+        {
+            Limits limits = GetDisplayedLimits();
+            TimeAnalysisWindow.Create(limits);
+        }
+
+        /// <summary>
+        /// Returns a Limits with the name of the current wav file, and the frequency limits of the currently (zoomed) displaye
+        /// and the start location of the zoomed portion in the file, and the length of the 
+        /// </summary>
+        /// <returns></returns>
+        private Limits GetDisplayedLimits()
+        {
+            Limits limits = new Limits();
+            limits.filename = segmentSonagram.fileName;
+            var plotLimits=wpfPlot.Plot.GetAxisLimits();
+            limits.fMin = plotLimits.YMin;
+            limits.fMax = plotLimits.YMax;
+            TimeSpan start = TimeSpan.FromSeconds(segmentSonagram.startOffset + plotLimits.XMin);
+            limits.startInFile = start;
+            limits.length = TimeSpan.FromSeconds(plotLimits.XMax - plotLimits.XMin);
+            return (limits);
+        }
+
+        TableData tableData = new TableData();
+
+        private void wpfPlot_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            e.Handled = false;
+            if(ch2!=null && txt!=null && e.Key == Key.T)
+            {
+                e.Handled = true;
+                var here = wpfPlot.GetMouseCoordinates();
+                var limits = wpfPlot.Plot.GetAxisLimits();
+                var YMin = limits.YMin;
+                if (limits.YMin < 0) YMin = 0;
+                if(here.x<limits.XMax && here.x>limits.XMin && here.y>YMin && here.y < limits.YMax)
+                {
+                    // the current point is inside the plottable area
+                    var xValue = here.x - staticPos.x;
+                    var yValue= here.y - staticPos.y;
+                    tableData.Add(xValue, yValue);
+                    Debug.WriteLine($"{xValue} of {tableData.Count} +/- {tableData.intervalSD}");
+                }
+            }
+        }
+    }
+
+    public class Limits
+    {
+        public string filename { get; set; } = "";
+        public TimeSpan startInFile { get; set; } = new TimeSpan();
+        public TimeSpan length { get; set; } = new TimeSpan();
+        public double fMin { get; set; } = 0.0d;
+        public double fMax { get; set; } = 192.0d;
+
     }
 
     

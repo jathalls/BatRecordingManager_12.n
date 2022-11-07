@@ -110,7 +110,10 @@
                     x:Name="wpfPlot" 
                     Grid.Column="1"
                     VerticalAlignment="Stretch"
-                    Grid.Row="0" PreviewMouseLeftButtonDown="wpfPlot_PreviewMouseLeftButtonDown" PreviewMouseDoubleClick="wpfPlot_PreviewMouseDoubleClick" 
+                    Grid.Row="0" 
+                    PreviewMouseLeftButtonDown="wpfPlot_PreviewMouseLeftButtonDown" 
+                    PreviewMouseDoubleClick="wpfPlot_PreviewMouseDoubleClick" 
+                    PreviewMouseMove="wpfPlot_PreviewMouseMove" PreviewKeyUp="wpfPlot_PreviewKeyUp" 
                     
                     />
 
@@ -164,6 +167,15 @@
                 Margin="5,0"
                 HorizontalAlignment="Left"
                 Style="{StaticResource SimpleButton}" Click="PlayButton_Click"
+                />
+            <Button
+                x:Name="AnalysisButton"
+                Content="Time Analysis"
+                Style="{StaticResource SimpleButton}"
+                HorizontalAlignment="Left"
+                Width="100"
+                ToolTip="Performs an auto-correlation of the current window, filtered at the current zoom settings" Click="AnalysisButton_Click"
+                
                 />
             <Button
                 x:Name="SettingsButton"

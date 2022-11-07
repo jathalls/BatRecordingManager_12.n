@@ -2,6 +2,7 @@
 using FftSharp;
 using LinqStatistics;
 using Microsoft.Maps.MapControl.WPF;
+using Microsoft.Maps.MapControl.WPF.Overlays;
 using NAudio.Dsp;
 using NAudio.Wave;
 using Spectrogram;
@@ -13,6 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UniversalToolkit;
+using static System.Net.WebRequestMethods;
+using File = System.IO.File;
 
 namespace BatRecordingManager
 {
@@ -20,11 +23,11 @@ namespace BatRecordingManager
     {
         public List<double[]> Ffts { get; private set; }
 
-        public bool GenerateForSegments(ref List<LabelledSegment> segmentList, bool experimental = false,DisplayMode display = DisplayMode.NONE)
+        public bool GenerateForSegments(ref List<LabelledSegment> segmentList, bool experimental = false, DisplayMode display = DisplayMode.NONE)
         {
             if (segmentList != null && segmentList.Any())
             {
-                for (int i=0;i<segmentList.Count();i++) 
+                for (int i = 0; i < segmentList.Count(); i++)
                 {
                     var seg = segmentList[i];
                     if (seg.BatSegmentLinks?.Any() ?? false)
@@ -43,12 +46,12 @@ namespace BatRecordingManager
             return (false);
         }
 
-        public Task<bool> GenerateForSegmentsAsync( List<LabelledSegment> segments)
+        public Task<bool> GenerateForSegmentsAsync(List<LabelledSegment> segments)
         {
             return (Task.Run(() => GenerateForSegments(ref segments)));
         }
 
-        internal StoredImage GenerateForSegment(ref LabelledSegment sel, Parametrization param = null, 
+        internal StoredImage GenerateForSegment(ref LabelledSegment sel, Parametrization param = null,
             FilterParams filterParams = null, DisplayMode display = DisplayMode.NONE)
         {
             return (GenerateSpectrogram(ref sel, param, filterParams: filterParams, display: display));
@@ -94,6 +97,20 @@ namespace BatRecordingManager
 
         public LabelledSegment segment = null;
 
+        private int currentFFTSize = -1;
+        private int currentFFTStepSize = 0;
+
+        public (int FFTSize, int FFTStep) CurrentFFTParams
+        {
+            get
+            {
+                return(currentFFTSize, currentFFTStepSize);
+            }
+        }
+
+        public (double[] audio, int sampleRate)? data = (new double[1], 0);
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -126,12 +143,14 @@ namespace BatRecordingManager
                 if (stepSize <= 0) stepSize = FFTSize.Value / 2;
             }
 
+            currentFFTSize = FFTSize??-1;
+            currentFFTStepSize = stepSize;
             //var data = GetDataSG(seg, settings.Spectrogram.FFTSize, out int sampleRate,
             //    (double)settings.Spectrogram.scale, filterParams: filterParams);
 
-            var data = GetDataSG(fileName, startOffset, durationSecs, FFTSize.Value, out int sampleRate, filterParams: filterParams);
+            data = GetDataSG(fileName, startOffset, durationSecs, FFTSize.Value, out int sampleRate, filterParams: filterParams);
             SampleRate = sampleRate;
-            if (data.audio == null) return (null);
+            if (data?.audio == null) return (null);
             //if (experimental) data = halfWaveRectify(data);
             //Debug.WriteLine($"gen spectrogram-> data {data.audio.Count()} lasting {data.audio.Count() / (double)sampleRate}s");
             int maxFrequency = sampleRate / 2;
@@ -146,7 +165,7 @@ namespace BatRecordingManager
                 stepSize: stepSize,
                 maxFreq: maxFrequency);
 
-            sg.Add(data.audio);
+            sg.Add(data?.audio);
             sg.Colormap = Colormap.GrayscaleReversed;
             var ft = sg.GetFFTs();
             Ffts = ft;
@@ -258,32 +277,31 @@ namespace BatRecordingManager
 
         }
 
-        private (double[] audio,int sampleRate) GetDataSG(string file,double startOffset,double durationSecs,int FFTSize,out int sampleRate,
-            double scale=16000.0d,FilterParams filterParams = null)
-        { 
+        public static (double[] audio, int sampleRate) GetFilteredData(string filename, TimeSpan startInFile, TimeSpan duration, FilterParams filterParams, double scale = 1.0d)
+        {
             List<double> result;
             double[] dataArray;
 
-            sampleRate = 384000;
+            int sampleRate = 384000;
             //int FFTSize = (int)Math.Pow(2, FFTOrder);
 
-            
+
             //string file = Path.Combine(sel.Recording.RecordingSession.OriginalFilePath,sel.Recording.RecordingName);
-            if (!File.Exists(file)) return (null, sampleRate);
+            if (!File.Exists(filename)) return (null, sampleRate);
             var audio = new double[1];
-            using (var wfr = new AudioFileReader(file))
+            using (var wfr = new AudioFileReader(filename))
             {
                 var sp = wfr.ToSampleProvider();
                 sampleRate = wfr.WaveFormat.SampleRate;
-                SampleRate = sampleRate;
+                //SampleRate = sampleRate;
                 TimeSpan leadin = new TimeSpan();
-                
-                
 
-                duration = TimeSpan.FromSeconds(durationSecs);
+                int FFTSize = 1024;
 
-                var data = sp.Skip(TimeSpan.FromSeconds(startOffset) + leadin).Take(duration);
-                var sampleCount = (int)(durationSecs * sampleRate);
+                //duration = TimeSpan.FromSeconds(durationSecs);
+
+                var data = sp.Skip(startInFile + leadin).Take(duration);
+                var sampleCount = (int)(duration.TotalSeconds * sampleRate);
                 float[] faData = new float[FFTSize];
                 result = new List<double>();
                 int samplesRead;
@@ -299,55 +317,70 @@ namespace BatRecordingManager
                 {
 
                     BiQuadFilter filter;
-                    for(int i = 0; i < filterParams.HighPassFilterIterations; i++)
+                    if (filterParams.HighPassFilterFrequency > 1000)
                     {
-                        filter = BiQuadFilter.HighPassFilter(sampleRate, filterParams.HighPassFilterFrequency,
-                        (float)filterParams.FilterQ);
-                        Debug.WriteLine($"HPFilter {sampleRate}, {filterParams.HighPassFilterFrequency}, {filterParams.FilterQ}");
-
-                        for (int j = 0; j < dataArray.Length; j++)
+                        for (int i = 0; i < filterParams.HighPassFilterIterations; i++)
                         {
-                            var tmp= filter.Transform((float)dataArray[j]);
-                            if (float.IsNaN(tmp))
+                            filter = BiQuadFilter.HighPassFilter(sampleRate, filterParams.HighPassFilterFrequency,
+                            (float)filterParams.FilterQ);
+                            Debug.WriteLine($"HPFilter {sampleRate}, {filterParams.HighPassFilterFrequency}, {filterParams.FilterQ}");
+
+                            for (int j = 0; j < dataArray.Length; j++)
                             {
-                                tmp = (float)dataArray[j];
+                                var tmp = filter.Transform((float)dataArray[j]);
+                                if (float.IsNaN(tmp))
+                                {
+                                    tmp = (float)dataArray[j];
+                                }
+                                dataArray[j] = (double)tmp;
                             }
-                            dataArray[j] = (double)tmp;
                         }
                     }
 
-                    
-                    
-                    for (int i = 0; i < filterParams.LowPassFilterIterations; i++)
+
+                    if (filterParams.LowPassFilterFrequency < (sampleRate / 2) - 1000)
                     {
-                        filter = BiQuadFilter.LowPassFilter(sampleRate, filterParams.LowPassFilterFrequency,
-                        (float)filterParams.FilterQ);
-                        Debug.WriteLine($"LPFilter {sampleRate}, {filterParams.LowPassFilterFrequency}, {filterParams.FilterQ}");
-                        for (int j = 0; j < dataArray.Length; j++)
+                        for (int i = 0; i < filterParams.LowPassFilterIterations; i++)
                         {
-                            
-                            var tmp = filter.Transform((float)dataArray[j]);
-                            if (float.IsNaN(tmp))
+                            filter = BiQuadFilter.LowPassFilter(sampleRate, filterParams.LowPassFilterFrequency,
+                            (float)filterParams.FilterQ);
+                            Debug.WriteLine($"LPFilter {sampleRate}, {filterParams.LowPassFilterFrequency}, {filterParams.FilterQ}");
+                            for (int j = 0; j < dataArray.Length; j++)
                             {
-                                tmp = (float)dataArray[j];
+
+                                var tmp = filter.Transform((float)dataArray[j]);
+                                if (float.IsNaN(tmp))
+                                {
+                                    tmp = (float)dataArray[j];
+                                }
+                                dataArray[j] = (double)tmp;
                             }
-                            dataArray[j] = (double)tmp;
                         }
                     }
-                    
+
                 }
-                /*
-                var filter = BiQuadFilter.HighPassFilter(sampleRate, 15000, 1);
-                audio = new double[result.Count];
-                var maxVal = result.Max();
-                var scale = 1.0f / maxVal;
-                for (int i = 0; i < result.Count; i++)
-                {
-                    result[i] = result[i] * scale * 1000.0f;
-                    audio[i] = (double)filter.Transform(result[i]);
-                }*/
             }
             return (dataArray, sampleRate);
+        }
+
+        private (double[] audio,int sampleRate) GetDataSG(string file,double startOffset,double durationSecs,int FFTSize,out int sampleRate,
+            double scale=16000.0d,FilterParams filterParams = null)
+        {
+
+            /*
+            var filter = BiQuadFilter.HighPassFilter(sampleRate, 15000, 1);
+            audio = new double[result.Count];
+            var maxVal = result.Max();
+            var scale = 1.0f / maxVal;
+            for (int i = 0; i < result.Count; i++)
+            {
+                result[i] = result[i] * scale * 1000.0f;
+                audio[i] = (double)filter.Transform(result[i]);
+            }*/
+            var result = SegmentSonagrams.GetFilteredData(file, TimeSpan.FromSeconds(startOffset), TimeSpan.FromSeconds(durationSecs), filterParams,scale);
+            sampleRate = result.sampleRate;
+            duration = TimeSpan.FromSeconds(durationSecs);
+            return (result);
         }
 
         public string fileName = "";
@@ -359,33 +392,45 @@ namespace BatRecordingManager
             if (!((segment == null)&&string.IsNullOrWhiteSpace(fileName)))
             {
                 int sampleRate = SampleRate;
-                (double[] audio, int sampleRate)? data = null;
-                if (segment != null)
+                int maxFrequency = 192000;
+                SpectrogramGenerator sg = spectrogramGenerator;
+                //(double[] audio, int sampleRate)? data = null;
+                if (FFTSize == currentFFTSize && FFTAdvance == currentFFTStepSize && FFTSize > 2 && 
+                    FFTAdvance > 0 && data.Value.audio.Length > 0 && data.Value.sampleRate > 0 &&
+                    spectrogramGenerator!=null)
                 {
-                    data = GetDataSG(segment, FFTSize, out sampleRate,
-                             filterParams: FilterParams);
+                    Debug.WriteLine("SG already calculated");
+                    maxFrequency=((data?.sampleRate)??384000)/2;
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(fileName)) { return (null); }
-                    if(!File.Exists(fileName)) { return (null); }
-                    data = GetDataSG(fileName, startOffset, durationSecs, FFTSize, out sampleRate, filterParams: FilterParams);
+                    if (segment != null)
+                    {
+                        data = GetDataSG(segment, FFTSize, out sampleRate,
+                                 filterParams: FilterParams);
+                    }
+                    else
+                    {
+                        if (string.IsNullOrWhiteSpace(fileName)) { return (null); }
+                        if (!File.Exists(fileName)) { return (null); }
+                        data = GetDataSG(fileName, startOffset, durationSecs, FFTSize, out sampleRate, filterParams: FilterParams);
+                    }
+
+                    if (data?.audio == null) return null;
+                    //if (experimental) data = halfWaveRectify(data);
+                    Debug.WriteLine($"gen spectrogram-> data {data.Value.audio.Count()} lasting {data.Value.audio.Count() / (double)sampleRate}s");
+                    maxFrequency = sampleRate / 2;
+
+
+
+                    sg = new SpectrogramGenerator(sampleRate,
+                        fftSize: FFTSize,
+                        stepSize: FFTAdvance,
+                        maxFreq: maxFrequency);
+
+                    sg.Add(data?.audio ?? new double[0]);
+
                 }
-                if (data?.audio == null) return null;
-                //if (experimental) data = halfWaveRectify(data);
-                Debug.WriteLine($"gen spectrogram-> data {data.Value.audio.Count()} lasting {data.Value.audio.Count() / (double)sampleRate}s");
-                int maxFrequency = sampleRate / 2;
-                
-                
-
-                var sg = new SpectrogramGenerator(sampleRate,
-                    fftSize: FFTSize,
-                    stepSize: FFTAdvance,
-                    maxFreq: maxFrequency);
-
-                sg.Add(data?.audio??new double[0]);
-
-                
 
                 var fts = sg.GetFFTs();
 
@@ -415,6 +460,8 @@ namespace BatRecordingManager
             }
             return (null);
         }
+
+        private SpectrogramGenerator spectrogramGenerator = null;
 
         private double minval = 0.0d;
         private double maxval = 2.0d;
