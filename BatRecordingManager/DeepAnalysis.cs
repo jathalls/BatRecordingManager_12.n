@@ -32,8 +32,8 @@ namespace BatRecordingManager
 {
     public class Spectrum
     {
-        public double[] fft = null;
-        public double fftMean = 0.0d;
+        public double[] fft;
+        public double fftMean;
         public int HzPerBin;
         public int PeakBin;
         public float PeakFrequency;
@@ -128,8 +128,8 @@ namespace BatRecordingManager
 
         private readonly int FFTOrder = 9;
         private readonly int FFTSize;
-        private Complex[] rawFFT = null;
-        private int sampleRate = 0;
+        private Complex[] rawFFT;
+        private int sampleRate;
 
         /// <summary>
         /// Extracts the portion of the FFT around the local maximum and zeroes all other values
@@ -167,7 +167,7 @@ namespace BatRecordingManager
 
         public event EventHandler<EventArgs> SaveClicked;
 
-        public Parametrization param { get; set; } = null;
+        public Parametrization param { get; set; }
 
         public static Bitmap decorateBitmap(Bitmap bmp, int FFTSize, int FFTAdvance, int SampleRate, Parametrization param = null)
         {
@@ -536,14 +536,14 @@ namespace BatRecordingManager
 
         //private readonly double logMaximumValue;
         //private readonly double logMinimumValue;
-        private double advanceMS = 0;
+        private double advanceMS;
         private List<float> alldata = new List<float>();
         private double[] FFTQuiet;
         private List<float> gradient = new List<float>();
         private double MaximumValue;
         private double MinimumValue;
         private List<(int frequency, double value, int bin)> peakFrequency = new List<(int frequency, double value, int bin)>();
-        private LabelledSegment selectedSegment = null;
+        private LabelledSegment selectedSegment;
 
         private static Color Scale(double[] recipFft, int bin, double max, double MaximumValue)
         {

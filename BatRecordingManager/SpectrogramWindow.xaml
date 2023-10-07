@@ -28,13 +28,14 @@
                         Width="400"
                         Margin="5,0"
                         Value="96" 
-                        
+                        Visibility="Hidden"
                         ValueChanged="GainSlider_ValueChanged" 
                         TickFrequency="12" 
                         TickPlacement="BottomRight"/>
                 <TextBox x:Name="GainText"
                          Width="50"
                          Margin="5,0"
+                         Visibility="Hidden"
                          Text="{Binding ElementName=GainSlider, Path=Value}"/>
                 <Slider x:Name="OffsetSlider"
                         Maximum="120"
@@ -45,11 +46,12 @@
                         LargeChange="12"
                         SmallChange="12"
                         TickFrequency="12"
-                        
+                        Visibility="Hidden"
                         ValueChanged="OffsetSlider_ValueChanged"/>
                 <TextBox x:Name="OffsetText"
                          Width="50"
                          Margin="5,0"
+                         Visibility="Hidden"
                          Text="{Binding ElementName=OffsetSlider, Path=Value}"/>
                 <CheckBox x:Name="SmoothingCheckBox"
                           IsChecked="True"

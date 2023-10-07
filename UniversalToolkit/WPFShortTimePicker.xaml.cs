@@ -75,7 +75,7 @@ namespace UniversalToolkit
             DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(WPFShortTimePicker),
                 new UIPropertyMetadata(false));
 
-        private static bool inTimeChanged = false;
+        private static bool inTimeChanged;
 
         private static void OnTimeChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {

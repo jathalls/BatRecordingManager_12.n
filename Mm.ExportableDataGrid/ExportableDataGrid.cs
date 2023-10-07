@@ -21,7 +21,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
-namespace Mm.ExportableDataGrid
+namespace Mm.MMExportableDataGrid
 {
     public class ExportableDataGrid : DataGrid
     {

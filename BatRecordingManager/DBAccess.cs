@@ -1239,7 +1239,7 @@ matched {matchingRecording?.RecordingName}
                 batReferenceDataContext.CreateDatabase();
                 Version version = new Version();
                 version.Version1 = DbVersionDec;
-                if (batReferenceDataContext.Versions.Count() <= 0)
+                if (!batReferenceDataContext.Versions.Any())
                 {
                     batReferenceDataContext.Versions.InsertOnSubmit(version);
                 }
@@ -2658,9 +2658,9 @@ matched {matchingRecording?.RecordingName}
             var result = new ObservableCollection<StoredImage>();
             if (dc == null) dc = GetDataContext();
             var orphans = from bd in dc.BinaryDatas
-                          where (bd.BatPictures == null || bd.BatPictures.Count() == 0)
-                                && (bd.CallPictures == null || bd.CallPictures.Count() == 0)
-                                && (bd.SegmentDatas == null || bd.SegmentDatas.Count() == 0)
+                          where (bd.BatPictures == null || !bd.BatPictures.Any() )
+                                && (bd.CallPictures == null || !bd.CallPictures.Any() )
+                                && (bd.SegmentDatas == null || !bd.SegmentDatas.Any() )
                           select bd;
 
             foreach (var blob in orphans ?? Enumerable.Empty<BinaryData>().AsQueryable())
@@ -2937,7 +2937,7 @@ matched {matchingRecording?.RecordingName}
             Recording result = null;
 
             if (!string.IsNullOrWhiteSpace(filename))
-                if (filename.ToUpper().Contains(".WAV"))
+                if (filename.Contains(".WAV",StringComparison.CurrentCultureIgnoreCase))
                 {
                     //if (filename.Contains(@"\"))
                     //{
@@ -3151,32 +3151,25 @@ matched {matchingRecording?.RecordingName}
         {
             RecordingSessionData result = null;
             if (id < 0) return result;
-
-            var dc = GetFastDataContext();
-            var sess = (from rs in dc.RecordingSessions
-                        where rs.Id == id
-                        select rs).SingleOrDefault();
-
-            if (sess != null && sess.Id == id)
-                try
-                {
-                    result = new
-                                  RecordingSessionData(
-                                      sess.Id,
-                                      sess.SessionTag,
-                                      sess.Location,
-                                      sess.SessionDate,
-                                      sess.SessionStartTime,
-                                      dc.SegmentDatas.Count(
-                                          lnk => lnk.LabelledSegment.Recording.RecordingSessionId == sess.Id),
-                                      sess.Recordings.Count()
-                                  );
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("Error reading data:- " + ex.Message);
-                    Tools.ErrorLog(ex.Message);
-                }
+            try
+            {
+                var dc = GetFastDataContext();
+                result = (from rs in dc.RecordingSessions
+                          where rs.Id == id
+                          select new RecordingSessionData(rs.Id,
+                                        rs.SessionTag,
+                                        rs.Location,
+                                        rs.SessionDate,
+                                        rs.SessionStartTime,
+                                        dc.SegmentDatas.Count(
+                                            lnk => lnk.LabelledSegment.Recording.RecordingSessionId == rs.Id),
+                                        rs.Recordings.Count)).SingleOrDefault();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error reading data:- " + ex.Message);
+                Tools.ErrorLog(ex.Message);
+            }
 
             return (result);
         }
@@ -3808,9 +3801,9 @@ matched {matchingRecording?.RecordingName}
             var dc = GetDataContext();
 
             var orphans = from bd in dc.BinaryDatas
-                          where (bd.BatPictures == null || bd.BatPictures.Count() == 0)
-                                && (bd.CallPictures == null || bd.CallPictures.Count() == 0)
-                                && (bd.SegmentDatas == null || bd.SegmentDatas.Count() == 0)
+                          where (bd.BatPictures == null || !bd.BatPictures.Any() )
+                                && (bd.CallPictures == null || !bd.CallPictures.Any() )
+                                && (bd.SegmentDatas == null || !bd.SegmentDatas.Any() )
                           select bd;
 
             foreach (var orphan in orphans ?? Enumerable.Empty<BinaryData>().AsQueryable())
@@ -5323,9 +5316,9 @@ matched {matchingRecording?.RecordingName}
             {
                 var binariesToDelete = from bd in dc.BinaryDatas
                                        where imagesToDelete.Contains(bd) &&
-                                             bd.CallPictures.Count() == 0 &&
-                                             bd.BatPictures.Count() == 0 &&
-                                             bd.SegmentDatas.Count() == 0
+                                             !bd.CallPictures.Any()  &&
+                                             !bd.BatPictures.Any()  &&
+                                             !bd.SegmentDatas.Any()
                                        select bd;
                 if (!binariesToDelete.IsNullOrEmpty())
                 {
@@ -5337,9 +5330,9 @@ matched {matchingRecording?.RecordingName}
             {
                 var binariesToDelete = from bd in dc.BinaryDatas
                                        where
-                                           bd.CallPictures.Count() == 0 &&
-                                           bd.BatPictures.Count() == 0 &&
-                                           bd.SegmentDatas.Count() == 0
+                                           !bd.CallPictures.Any()  &&
+                                           !bd.BatPictures.Any()  &&
+                                           !bd.SegmentDatas.Any() 
                                        select bd;
 
                 if (!binariesToDelete.IsNullOrEmpty())
@@ -6269,13 +6262,13 @@ matched {matchingRecording?.RecordingName}
         private static void ResolveBatAndRecLinks(BatReferenceDBLinqDataContext dc)
         {
             var noBsl = from brLink in dc.BatRecordingLinks
-                        where brLink.Bat.BatSegmentLinks.Count() <= 0
+                        where !brLink.Bat.BatSegmentLinks.Any()
                         select brLink;
             dc.BatRecordingLinks.DeleteAllOnSubmit(noBsl); // remove all links where the bat has no labelled segments
             Debug.WriteLine("Deleting " + noBsl.Count() + " BRLS with no Bat.BatSegmentLinks");
 
             var noRsl = from brLink in dc.BatRecordingLinks
-                        where brLink.Recording.LabelledSegments.Count() <= 0
+                        where !brLink.Recording.LabelledSegments.Any()
                         select brLink;
             Debug.WriteLine("Deleting " + noRsl.Count() + " BRLS with no recording.LabelledSegments");
             dc.BatRecordingLinks
@@ -7213,7 +7206,7 @@ ADD [AutoID] NVARCHAR (50) NULL;"
                 foreach (var bd in imagesToDelete ?? Enumerable.Empty<BinaryData>())
                 {
                     dc.SegmentDatas.DeleteAllOnSubmit(bd.SegmentDatas);
-                    if (!(bd.BatPictures.Count() > 0 || bd.CallPictures.Count() > 0 || bd.SegmentDatas.Count() > 1))
+                    if (!(bd.BatPictures.Any() || bd.CallPictures.Any() || bd.SegmentDatas.Count() > 1))
                         dc.BinaryDatas.DeleteOnSubmit(bd);
                 }
 

@@ -350,13 +350,13 @@ namespace BatRecordingManager
 
         protected virtual void OnSaveClicked(callEventArgs e) => saveClicked?.Invoke(this, e);
 
-        private int depth = 0;
+        private int depth;
 
         private int FFTOverlapSamples;
 
         private int FFTSize;
 
-        private bool overFlow = false;
+        private bool overFlow;
 
         private int samplesPerMs;
 

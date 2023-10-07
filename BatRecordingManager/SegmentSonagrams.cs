@@ -92,13 +92,13 @@ namespace BatRecordingManager
 
         public event EventHandler<EventArgs> GenerationComplete;
 
-        private FilterParams FilterParams = null;
+        private FilterParams FilterParams;
         protected virtual void OnGenerationComplete(EventArgs args) => GenerationComplete?.Invoke(this, args);
 
-        public LabelledSegment segment = null;
+        public LabelledSegment segment;
 
         private int currentFFTSize = -1;
-        private int currentFFTStepSize = 0;
+        private int currentFFTStepSize;
 
         public (int FFTSize, int FFTStep) CurrentFFTParams
         {
@@ -263,7 +263,7 @@ namespace BatRecordingManager
 
         
 
-        public TimeSpan duration = new TimeSpan();
+        public TimeSpan duration;
         public int SampleRate = 384000;
 
         private (double[] audio, int sampleRate) GetDataSG(LabelledSegment segment, int FFTSize, out int sampleRate,
@@ -384,7 +384,7 @@ namespace BatRecordingManager
         }
 
         public string fileName = "";
-        public double startOffset = 0.0d;
+        public double startOffset;
         public double durationSecs = 5.0d;
 
         internal double[,] Regen(int FFTSize,int FFTAdvance)
@@ -418,7 +418,7 @@ namespace BatRecordingManager
 
                     if (data?.audio == null) return null;
                     //if (experimental) data = halfWaveRectify(data);
-                    Debug.WriteLine($"gen spectrogram-> data {data.Value.audio.Count()} lasting {data.Value.audio.Count() / (double)sampleRate}s");
+                    Debug.WriteLine($"gen spectrogram-> data {data.Value.audio.Length} lasting {data.Value.audio.Length / (double)sampleRate}s");
                     maxFrequency = sampleRate / 2;
 
 
@@ -428,7 +428,7 @@ namespace BatRecordingManager
                         stepSize: FFTAdvance,
                         maxFreq: maxFrequency);
 
-                    sg.Add(data?.audio ?? new double[0]);
+                    sg.Add(data?.audio ?? Array.Empty<double>());
 
                 }
 
@@ -461,9 +461,9 @@ namespace BatRecordingManager
             return (null);
         }
 
-        private SpectrogramGenerator spectrogramGenerator = null;
+        private SpectrogramGenerator spectrogramGenerator;
 
-        private double minval = 0.0d;
+        private double minval;
         private double maxval = 2.0d;
         private double rangeval = 2.0d;
 

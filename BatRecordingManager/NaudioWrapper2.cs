@@ -47,9 +47,9 @@ namespace BatRecordingManager
 
 		private EventHandler _stoppedEvent;
 
-		public VolumeSampleProvider _volumeProvider { get; set; } = null;
+        public VolumeSampleProvider _volumeProvider { get; set; }
 
-		public float Volume { get; set; } = 5.0f;
+        public float Volume { get; set; } = 5.0f;
 
 		
 		
@@ -66,9 +66,9 @@ namespace BatRecordingManager
 		/// </summary>
 		public decimal Frequency { get; set; } = 50.0m;
 
-		public bool PlayLooped { get; set; } = false;
+        public bool PlayLooped { get; set; }
 
-		public PlaybackState playBackState
+        public PlaybackState playBackState
 		{
 			get
 			{
@@ -318,17 +318,17 @@ namespace BatRecordingManager
 			}
 		}
 
-		Timer _timer = null;
+		Timer _timer;
 
-		private BufferedWaveProvider bufferedWaveProvider = null;
+        private BufferedWaveProvider bufferedWaveProvider;
 
-		/// <summary>
-		/// Loops filling and processing buffers and writing the result to the named file until there is no further data
-		/// available, then closes the file and returns
-		/// </summary>
-		/// <param name="filename"></param>
-		/// <exception cref="NotImplementedException"></exception>
-		private void SaveProcessedDataToFile(string filename, PlayListItem itemToPlay)
+        /// <summary>
+        /// Loops filling and processing buffers and writing the result to the named file until there is no further data
+        /// available, then closes the file and returns
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void SaveProcessedDataToFile(string filename, PlayListItem itemToPlay)
 		{
 			try
 			{
@@ -366,15 +366,15 @@ namespace BatRecordingManager
 		}
 
 
-		public PlayListItem playableItem = null;
+		public PlayListItem playableItem;
 
-		/// <summary>
-		/// Applies the process buffer according to the currentspeed, Frequency etc properties
-		/// using the AudioFileReader afr which is pre-positioned at the start.  It will process
-		/// and return as a reader a block of data no bigger than the duration parameter in seconds.
-		/// </summary>
-		/// <returns></returns>
-		private WaveFileReader ProcessBuffer(double duration)
+        /// <summary>
+        /// Applies the process buffer according to the currentspeed, Frequency etc properties
+        /// using the AudioFileReader afr which is pre-positioned at the start.  It will process
+        /// and return as a reader a block of data no bigger than the duration parameter in seconds.
+        /// </summary>
+        /// <returns></returns>
+        private WaveFileReader ProcessBuffer(double duration)
 		{
 			//if(reader == null) return null;
 			if (afr == null || sampleProvider == null) return null;
@@ -521,16 +521,16 @@ namespace BatRecordingManager
 
 
 
-		private AudioFileReader afr = null;
+		private AudioFileReader afr;
 
-		private ISampleProvider sampleProvider = null;
+        private ISampleProvider sampleProvider;
 
-		/// <summary>
-		/// Called once to prep and position the audioflereader and its associated sampleprovider
-		/// </summary>
-		private void GetBuffer2()
+        /// <summary>
+        /// Called once to prep and position the audioflereader and its associated sampleprovider
+        /// </summary>
+        private void GetBuffer2()
 		{
-
+			
 
 			if (playableItem == null) return;
 			if (string.IsNullOrWhiteSpace(playableItem.filename)) return;

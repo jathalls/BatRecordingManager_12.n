@@ -54,23 +54,6 @@ namespace BatRecordingManager
 		{
 			OnCreated();
 		}
-		
-		public System.Data.Linq.Table<Class1> Class1s
-		{
-			get
-			{
-				return this.GetTable<Class1>();
-			}
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="")]
-	public partial class Class1
-	{
-		
-		public Class1()
-		{
-		}
 	}
 }
 #pragma warning restore 1591

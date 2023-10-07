@@ -84,23 +84,34 @@ namespace UniversalToolkit
         {
             if (!IsReadOnly)
             {
-                switch (((Grid)sender).Name)
+                if (args.Key == Key.Down || args.Key == Key.Up)
                 {
-                    case "sec":
-                        if (args.Key == Key.Up)
-                            this.Seconds++;
-                        if (args.Key == Key.Down)
-                            this.Seconds--;
-                        break;
+                    switch (((Grid)sender).Name)
+                    {
+                        case "sec":
+                            if (args.Key == Key.Up)
+                                this.Seconds++;
+                            if (args.Key == Key.Down)
+                                this.Seconds--;
+                            break;
 
-                    case "min":
-                        if (args.Key == Key.Up)
-                            this.Minutes++;
-                        if (args.Key == Key.Down)
-                            this.Minutes--;
-                        break;
+                        case "mmTxt":
+                            if (args.Key == Key.Up)
+                                this.Minutes++;
+                            if (args.Key == Key.Down)
+                                this.Minutes--;
+                            break;
 
-                    
+                        case "hhTxt":
+                            if (args.Key == Key.Up)
+                                this.Hours++;
+                            if (args.Key == Key.Down)
+                                this.Hours--;
+                            break;
+                        default:
+                            break;
+                    }
+                    args.Handled = true;
                 }
             }
         }

@@ -110,7 +110,7 @@ namespace BatRecordingManager
             Add(segment);
         }
 
-        private bool unsure = false;
+        private bool unsure;
 
         public string batAutoID { get; set; }
 

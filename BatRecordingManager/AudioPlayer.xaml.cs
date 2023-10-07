@@ -93,14 +93,13 @@ namespace BatRecordingManager
             pli.segment = segmentToAdd;
             pli.segmentDuration=segmentToAdd.Duration()??new TimeSpan();
             pli.segmentOffset = segmentToAdd.StartOffset;
-            var sonagramGenerator = new SegmentSonagrams();
-            var si=sonagramGenerator.GenerateForSegment(ref segmentToAdd, display: SegmentSonagrams.DisplayMode.ALWAYS);
-            SpectrogramWindow.Display(sonagramGenerator,pli);
+            //var sonagramGenerator = new SegmentSonagrams();
+            //var si=sonagramGenerator.GenerateForSegment(ref segmentToAdd, display: SegmentSonagrams.DisplayMode.ALWAYS);
+            SpectrogramWindow.Display(pli.segment,pli);
 
-            if(si!=null)
+            
                 pli.hasSpectrogram = true;
-            else
-                pli.hasSpectrogram = false;
+           
             AddToPlayList(pli);
 
             pli.ItemClosed += Pli_ItemClosed;
@@ -180,7 +179,7 @@ namespace BatRecordingManager
             if (!pli.hasSpectrogram)
             {
                 
-                var sgi = new SegmentSonagrams();
+                /*var sgi = new SegmentSonagrams();
                 StoredImage si = null;
                 if (pli.segment != null && pli.segment.Recording != null)
                 {
@@ -192,10 +191,10 @@ namespace BatRecordingManager
                     si = sgi.GenerateForFile(pli.filename, 0.0d, pli.fileDuration.TotalSeconds,display:SegmentSonagrams.DisplayMode.ALWAYS);
                 }
                 if (si != null)
-                {
+                {*/
                     pli.hasSpectrogram = true;
-                    SpectrogramWindow.Display(segmentSonagram:sgi, pli: pli);
-                }
+                    SpectrogramWindow.Display(pli.segment, pli: pli);/*
+                }*/
                 
             }
             SetButtonVisibility();
@@ -454,13 +453,13 @@ namespace BatRecordingManager
         /// </summary>
         public string filename { get; set; }
 
-        public bool hasSpectrogram { get; set; } = false;
+        public bool hasSpectrogram { get; set; }
 
-        public TimeSpan segmentOffset { get; set; } = new TimeSpan();
+        public TimeSpan segmentOffset { get; set; }
 
-        public TimeSpan segmentDuration { get; set; } = new TimeSpan();
+        public TimeSpan segmentDuration { get; set; }
 
-        private TimeSpan _startOffset = new TimeSpan();
+        private TimeSpan _startOffset;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -499,7 +498,7 @@ namespace BatRecordingManager
             }
         }
 
-        private TimeSpan _playLength = new TimeSpan();
+        private TimeSpan _playLength;
         /// <summary>
         ///     duration of the segment to be played
         /// </summary>
@@ -523,7 +522,7 @@ namespace BatRecordingManager
             } 
         }
 
-        private TimeSpan _fileDuration = new TimeSpan();
+        private TimeSpan _fileDuration;
         /// <summary>
         /// The full length of the file refferred to
         /// </summary>
@@ -574,7 +573,7 @@ namespace BatRecordingManager
             return result;
         }
 
-        private bool Locked = false;
+        private bool Locked;
 
         public static PlayListItem Create(string filename)
         {

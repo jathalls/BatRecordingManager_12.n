@@ -217,7 +217,7 @@ namespace BatRecordingManager
             }
         }
 
-        public bool DisplayActualSize { get; set; } = false;
+        public bool DisplayActualSize { get; set; }
 
         /// <summary>
         ///     A list of values for horzontal grid lines to be overlaid on the image in pixels
@@ -268,7 +268,7 @@ namespace BatRecordingManager
             }
         }
 
-        public bool IsSelectable { get; set; } = false;
+        public bool IsSelectable { get; set; }
 
         /// <summary>
         ///     Not sure if this name field is used

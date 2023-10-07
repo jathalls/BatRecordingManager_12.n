@@ -217,7 +217,7 @@ namespace BatRecordingManager
         /// <summary>
         ///     The selected bat identifier
         /// </summary>
-        public int SelectedBatId = 0;
+        public int SelectedBatId;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -451,7 +451,7 @@ namespace BatRecordingManager
 
         private readonly object _sessionActionEventLock = new object();
 
-        private readonly AnalyseAndImportClass aai = null;
+        private readonly AnalyseAndImportClass aai;
         private ImportPictureDialog _importPictureDialog;
         private bool _isPictureDialogOpen;
         private BatStatistics _selectedBatDetails;
@@ -462,7 +462,7 @@ namespace BatRecordingManager
         private EventHandler<SessionActionEventArgs> _sessionActionEvent;
 
         //public BatAndCallImageScrollerControl imageScroller { get; internal set; }
-        private Recording thisRecording { get; set; } = null;
+        private Recording thisRecording { get; set; }
 
         private void Aai_e_DataUpdated(object sender, EventArgs e)
         {

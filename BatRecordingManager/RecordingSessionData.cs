@@ -50,7 +50,7 @@ namespace BatRecordingManager
             IsSelected = false;
         }
 
-        public bool IsSelected { get; set; } = false;
+        public bool IsSelected { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -182,7 +182,7 @@ namespace BatRecordingManager
 
         private int _Id = -1;
         private string _location;
-        private bool? _multiDaySession = null;
+        private bool? _multiDaySession;
         private int? _numberOfRecordingImages;
         private int _numberOfRecordings;
         private DateTime _sessionStartDate;

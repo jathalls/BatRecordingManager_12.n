@@ -43,7 +43,7 @@ namespace BatRecordingManager
         /// <summary>
         ///     The index of the first session on the current page or the page to be loaded
         /// </summary>
-        public int CurrentTopOfScreen = 0;
+        public int CurrentTopOfScreen;
 
         /// <summary>
         ///     A string representing the field to be used for ordering the page entries before loading
@@ -328,7 +328,7 @@ namespace BatRecordingManager
                         var existingSession = from sess in recordingSessionDataList
                                               where sess.Id == UpdatedSession.Id
                                               select sess;
-                        if (existingSession == null || existingSession.Count() <= 0)
+                        if (!(existingSession?.Any()??false))
                         {
                             recordingSessionDataList.Add(upDatedSessionData);
                         }
@@ -358,7 +358,7 @@ namespace BatRecordingManager
                     var existingSession = from sess in recordingSessionDataList
                                           where sess.Id == UpdatedSession.Id
                                           select sess;
-                    if (existingSession == null || existingSession.Count() <= 0)
+                    if (!(existingSession?.Any()??false))
                     {
                         recordingSessionDataList.Add(upDatedSessionData);
                     }

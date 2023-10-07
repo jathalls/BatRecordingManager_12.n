@@ -16,10 +16,12 @@
  */
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
+[assembly: CLSCompliant(true)]
 
-namespace Mm.ExportableDataGrid
+namespace Mm.MMExportableDataGrid
 {
     public class CsvExporter : IExporter
     {
@@ -35,7 +37,7 @@ namespace Mm.ExportableDataGrid
 
         public void AddColumn(string value)
         {
-            if (value.Contains(_delimiter)) value = "\"" + value + "\"";
+            if (value.Contains(_delimiter,StringComparison.CurrentCulture)) value = "\"" + value + "\"";
             sb.Append(value);
             //sb.Append(value.Replace(_delimiter,
             //  string.Format("\"{0}\"", _delimiter)));
@@ -53,11 +55,11 @@ namespace Mm.ExportableDataGrid
             if (string.IsNullOrEmpty(exportPath))
             {
                 var rnd = new Random();
-                exportPath = string.Format("{0}.csv", rnd.Next());
+                exportPath = string.Format(CultureInfo.CurrentCulture,"{0}.csv", rnd.Next());
             }
-            else if (!Path.GetExtension(exportPath).ToLower().Equals(".csv"))
+            else if (!Path.GetExtension(exportPath).Equals(".csv", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Invalid file extension.", "exportPath");
+                throw new ArgumentException("Invalid file extension.", nameof(exportPath));
             }
 
             File.WriteAllText(exportPath, sb.ToString().Trim());

@@ -226,8 +226,8 @@ namespace BatRecordingManager
             }
         }
 
-        public bool DisplayActualSize { get; set; } = false;
-        public bool IsSelectable { get; set; } = false;
+        public bool DisplayActualSize { get; set; }
+        public bool IsSelectable { get; set; }
         //public Visibility isSpectrogramVisible { get; set; } = Visibility.Hidden;
 
         /// <summary>
@@ -560,7 +560,7 @@ namespace BatRecordingManager
 
         private readonly object _upButtonPressedEventLock = new object();
 
-        private bool __showGrid = false;
+        private bool __showGrid;
 
         private Canvas _axisGrid = new Canvas();
 
@@ -581,7 +581,7 @@ namespace BatRecordingManager
 
         private EventHandler<EventArgs> _upButtonPressedEvent;
 
-        private bool isGridHighlighted = false;
+        private bool isGridHighlighted;
 
         //private bool selectImagePoint = false;
 
@@ -616,7 +616,7 @@ namespace BatRecordingManager
         /// </summary>
         private Dictionary<int, int> HLineMap { get; set; } = new Dictionary<int, int>();
 
-        private Point rightMousePos { get; set; } = new Point();
+        private Point rightMousePos { get; set; }
 
         /// <summary>
         ///     LineMap has two integers.  The key is the index of a Line in the children of displayImageCanvas

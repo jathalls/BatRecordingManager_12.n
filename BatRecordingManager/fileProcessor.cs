@@ -37,7 +37,7 @@ namespace BatRecordingManager
         /// </summary>
         public BatList batList = new BatList();
 
-        public bool ByAutoID = false;
+        public bool ByAutoID;
 
         /// <summary>
         ///     The Labelled Segment

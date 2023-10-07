@@ -15,7 +15,7 @@
 
  */
 
-namespace Mm.ExportableDataGrid
+namespace Mm.MMExportableDataGrid
 {
     public interface IExporter
     {

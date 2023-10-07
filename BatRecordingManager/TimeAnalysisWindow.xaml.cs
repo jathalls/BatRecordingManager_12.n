@@ -33,7 +33,7 @@ namespace BatRecordingManager
             Loaded += TimeAnalysisWindow_Loaded;
             InitializeComponent();
         }
-        private bool loaded = false;
+        private bool loaded;
         private void TimeAnalysisWindow_Loaded(object sender, RoutedEventArgs e)
         {
             loaded = true;
@@ -108,7 +108,7 @@ namespace BatRecordingManager
 
         private SignalPlot signalPlot = new SignalPlot();
         private Crosshair crossHair = new Crosshair();
-        private Crosshair staticCrossHair = null;
+        private Crosshair staticCrossHair;
 
         /// <summary>
         /// Returns a one-sided autocorrelation of the data for an extent of 1 second according to the specified
@@ -163,7 +163,7 @@ namespace BatRecordingManager
 
         private static (double x, double y) baseCoordinates = (0, 0);
 
-        private Text txt { get; set; } = null;
+        private Text txt { get; set; }
 
         private void wpfPlot_MouseMove(object sender, MouseEventArgs e)
         {

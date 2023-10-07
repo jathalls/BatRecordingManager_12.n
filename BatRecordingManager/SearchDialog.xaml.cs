@@ -273,7 +273,7 @@ namespace BatRecordingManager
         /// <summary>
         /// boolean flag, defaults to false
         /// </summary>
-        public bool state { get; set; } = false;
+        public bool state { get; set; }
 
         /// <summary>
         /// Constructor for an event args which carries a boolean flag.

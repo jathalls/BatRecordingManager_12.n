@@ -99,9 +99,9 @@ namespace BatRecordingManager
 
         private Location _coordinates;
 
-        private MapMode AerialMode { get; set; } = null;
-        private MapMode LabelMode { get; set; } = null;
-        private MapMode RoadMode { get; set; } = null;
+        private MapMode AerialMode { get; set; }
+        private MapMode LabelMode { get; set; }
+        private MapMode RoadMode { get; set; }
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member

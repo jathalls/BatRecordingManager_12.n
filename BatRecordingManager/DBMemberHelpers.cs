@@ -420,7 +420,7 @@ namespace BatRecordingManager
 
     public partial class Bat
     {
-        public bool? ByAutoID { get; set; } = null;
+        public bool? ByAutoID { get; set; }
     }
 
     //###########################################################################################################
@@ -566,7 +566,7 @@ namespace BatRecordingManager
             }
         }
 
-        public bool isSelected { get; set; } = false;
+        public bool isSelected { get; set; }
 
         public bool IsWavFile
         {
@@ -627,7 +627,7 @@ namespace BatRecordingManager
             }
         }
 
-        private TimeSpan? _sunset = null;
+        private TimeSpan? _sunset;
         private List<int> _occupiedPeriodsReSunset = new List<int>();
 
         public List<int> getOccupiedPeriodsReSunset(out TimeSpan sunset)
@@ -718,9 +718,9 @@ namespace BatRecordingManager
         
         protected virtual void OnCommentChanged(EventArgs e)=>CommentChanged?.Invoke(this, e);
 
-        private TimeSpan _endTime = new TimeSpan();
-        private DateTime? _startDateTime = null;
-        private TimeSpan _startTime = new TimeSpan();
+        private TimeSpan _endTime;
+        private DateTime? _startDateTime;
+        private TimeSpan _startTime;
     }
 
     public partial class Recording
@@ -799,7 +799,7 @@ namespace BatRecordingManager
             get { return (!Metas.IsNullOrEmpty()); }
         }
 
-        public bool isSelected { get; set; } = false;
+        public bool isSelected { get; set; }
 
         /// <summary>
         /// returns true if the recording file ends with .wav and false otherwise
@@ -1101,9 +1101,9 @@ namespace BatRecordingManager
             }
         }
 
-        private TimeSpan? _endAfterSunset = null;
-        private TimeSpan? _startAfterSunset = null;
-        private TimeSpan? _sunset = null;
+        private TimeSpan? _endAfterSunset;
+        private TimeSpan? _startAfterSunset;
+        private TimeSpan? _sunset;
     }
 
     
@@ -1234,7 +1234,7 @@ namespace BatRecordingManager
             return result;
         }
 
-        private TimeSpan? _gpxCorrection { get; set; } = null;
+        private TimeSpan? _gpxCorrection { get; set; }
 
         public bool hasRecordings
         {
@@ -1287,7 +1287,7 @@ namespace BatRecordingManager
             }
         }
 
-        public bool IsSelected { get; set; } = false;
+        public bool IsSelected { get; set; }
 
         /// <summary>
         /// Returns <see langword="abstract"/>sDateTime for the start of the session, combining startDate
@@ -1303,6 +1303,6 @@ namespace BatRecordingManager
             }
         }
 
-        private bool? _hasGPSLocation = null;
+        private bool? _hasGPSLocation;
     }
 }

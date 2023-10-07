@@ -1762,7 +1762,7 @@ namespace BatRecordingManager
         }
 
         //private readonly string _oldStatus = "null";
-        private readonly int Depth = 0;
+        private readonly int Depth;
         private Cursor _previousCursor = Cursors.Arrow;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member

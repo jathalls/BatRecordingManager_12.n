@@ -382,14 +382,14 @@ namespace BatRecordingManager
         ///     Audacity text files (false) or as a set of wav files with Kaleidoscope
         ///     metadata (true).
         /// </summary>
-        private bool _processWavFiles = false;
+        private bool _processWavFiles;
 
         /// <summary>
         /// indicates if the selected folder is to be processed as a set of
         /// Audacity text files or as a set of .zc files with AnalookW header
         /// data or Kalaeidoscope metadata.
         /// </summary>
-        private bool _processZcFiles = false;
+        private bool _processZcFiles;
 
         /// <summary>
         ///     The session for folder
@@ -641,7 +641,7 @@ namespace BatRecordingManager
                 }
 
                 var wavFiles = Directory.EnumerateFiles(_fileBrowser.WorkingFolder, "*.wav");
-                if (wavFiles == null || wavFiles.Count() <= 0)
+                if (wavFiles == null || !wavFiles.Any())
                 {
                     wavFiles = Directory.EnumerateFiles(_fileBrowser.WorkingFolder, "*.zc");
                 }

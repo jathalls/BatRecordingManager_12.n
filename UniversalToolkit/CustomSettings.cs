@@ -45,7 +45,7 @@ namespace UniversalToolkit
 
     public class CustomSettings
     {
-        public bool changed = false;
+        public bool changed;
         public ReferenceCall call { get; set; }
         public (double min, double mean, double max) fBandwidth { get; set; } = (0, 0, 0);
         public (double min, double mean, double max) fEnd { get; set; } = (0, 0, 0);

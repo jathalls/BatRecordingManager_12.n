@@ -406,7 +406,7 @@ namespace BatRecordingManager
 
         private readonly object _segmentSelectionChangedEventLock = new object();
 
-        private bool _isCallDisplayEnabled = false;
+        private bool _isCallDisplayEnabled;
 
         //private bool _hasMetadata = false;
         private bool _isSegmentSelected;
@@ -428,7 +428,7 @@ namespace BatRecordingManager
         private int currentSelectedRecording;
 
         //private int currentSelectedSegment;
-        private DeepAnalysis deepAnalyser = null;
+        private DeepAnalysis deepAnalyser;
 
         //private bool isChanging = false;
         //private double offset = -1.0d;
@@ -1124,7 +1124,7 @@ namespace BatRecordingManager
                             if (display!=DisplayMode.NONE)
                             {
                                 //var ft = sonagramGenerator.Ffts;
-                                SpectrogramWindow.Display(sonagramGenerator);
+                                SpectrogramWindow.Display(sel);
 
                             }
                             image.DisplayActualSize = true;
@@ -1240,6 +1240,7 @@ namespace BatRecordingManager
             if (selection != null)
             {
                 var recordingId = (selection?.First()?.RecordingID) ?? -1;
+                /* replacing with Spectrogram.cs
                 SegmentSonagrams sonagramGenerator = new SegmentSonagrams();
                 foreach(var seg in selection)
                 {
@@ -1250,6 +1251,10 @@ namespace BatRecordingManager
                 sonagramGenerator.GenerateForSegments(ref selection, experimental,display:DisplayMode.ALWAYS);
                 
                 SpectrogramWindow.Display(sonagramGenerator);
+                */
+
+                SpectrogramWindow.Display(selection);
+
                 //UpdateRecordingsList(recordingId);
             }
         }

@@ -74,7 +74,7 @@ namespace BatRecordingManager
         /// <summary>
         /// boolean to indicate if time of day should be raltive to sunset with table start at sunset -6 hours.
         /// </summary>
-        public bool reSunset { get; set; } = false;
+        public bool reSunset { get; set; }
 
         /// <summary>
         ///     Read only string for the label in the tab to identify this report type

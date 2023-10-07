@@ -18,7 +18,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Mm.ExportableDataGrid
+namespace Mm.MMExportableDataGrid
 {
     public static class ExportBehaviour
     {

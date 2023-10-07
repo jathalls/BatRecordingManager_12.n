@@ -8,7 +8,7 @@
 
     Height="Auto" Width="Auto" x:Name="UserControl">
 
-    <Grid x:Name="LayoutRoot" Width="Auto" Height="Auto">
+    <Grid x:Name="LayoutRoot" Width="Auto" Height="Auto" >
 
         <Grid.ColumnDefinitions>
 
@@ -24,11 +24,19 @@
 
         </Grid.ColumnDefinitions>
 
-        <Grid x:Name="hour" Focusable="True" KeyDown="Down">
+        <Grid x:Name="hour"  >
 
-            <TextBlock x:Name="mmTxt" TextWrapping="Wrap" Text="{Binding Path=Hours, ElementName=UserControl, Mode=Default,StringFormat=00}"
-                IsEnabled="{Binding IsReadOnly}"
-                 TextAlignment="Center" VerticalAlignment="Center"  FontSize="14"/>
+            <TextBox 
+                x:Name="hhTxt" 
+                TextWrapping="Wrap" 
+                Focusable="True"
+                Text="{Binding Path=Hours, ElementName=UserControl, Mode=TwoWay,StringFormat=00}"
+                IsEnabled="{Binding IsReadOnly}" 
+                 TextAlignment="Center" 
+                VerticalAlignment="Center"  
+                FontSize="14" 
+                VerticalScrollBarVisibility="Disabled" 
+                KeyDown="Down"/>
 
         </Grid>
 
@@ -40,12 +48,19 @@
 
         </Grid>
 
-        <Grid  Grid.Column="2" x:Name="min" Focusable="True" KeyDown="Down">
+        <Grid  Grid.Column="2" x:Name="min" >
 
-            <TextBlock  x:Name="ddTxt"  TextWrapping="Wrap" Text="{Binding Path=Minutes, ElementName=UserControl, Mode=Default,StringFormat=00}"
-                        IsEnabled="{Binding IsReadOnly}"
-
-                  TextAlignment="Center" VerticalAlignment="Center"  FontSize="14"/>
+            <TextBox  
+                x:Name="mmTxt"  
+                TextWrapping="Wrap" 
+                Text="{Binding Path=Minutes, ElementName=UserControl, Mode=TwoWay,StringFormat=00}"
+                IsEnabled="{Binding IsReadOnly}"
+                Focusable="True"
+                IsTabStop="True"
+                KeyDown="Down"
+                TextAlignment="Center" 
+                VerticalAlignment="Center"  
+                FontSize="14"/>
 
         </Grid>
 
@@ -59,7 +74,7 @@
 
         <Grid  Grid.Column="4" Name="sec" Focusable="True" KeyDown="Down">
 
-            <TextBlock x:Name="yyTxt"  TextWrapping="Wrap" Text="{Binding Path=Seconds, ElementName=UserControl, Mode=Default,StringFormat=00}"
+            <TextBox x:Name="yyTxt"  TextWrapping="Wrap" Text="{Binding Path=Seconds, ElementName=UserControl, Mode=TwoWay,StringFormat=00}"
                     IsEnabled="{Binding IsReadOnly}"
                  TextAlignment="Center" VerticalAlignment="Center"  FontSize="14"/>
 

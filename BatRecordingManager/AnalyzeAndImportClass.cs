@@ -105,7 +105,7 @@ namespace BatRecordingManager
             if (recordingToAnalyse != null)
             {
                 FolderPath = recordingToAnalyse.RecordingSession.OriginalFilePath;
-                if (!FolderPath.EndsWith(@"\"))
+                if (!FolderPath.EndsWith(@"\",System.StringComparison.CurrentCulture))
                 {
                     FolderPath += @"\";
                 }
@@ -186,8 +186,8 @@ namespace BatRecordingManager
         }
 
         public string SessionTag { get; set; }
-        public DateTime? startedAt { get; set; } = null;
-        public Recording ThisRecording { get; set; } = null;
+        public DateTime? startedAt { get; set; }
+        public Recording ThisRecording { get; set; }
 
         public void AnalyseRecording()
         {
@@ -281,7 +281,7 @@ Are you sure this is correct?", "Append Analysis to current Session", MessageBox
                 FilesRemaining = 0;
 
                 FilesRemaining = (from file in WavFileList
-                                  where file.Substring(file.LastIndexOf(@"\")).Contains(SessionTag)
+                                  where file.Substring(file.LastIndexOf(@"\",System.StringComparison.CurrentCulture)).Contains(SessionTag,System.StringComparison.CurrentCulture)
                                   select file).Count();
                 /*foreach (var file in WavFileList)
                 {
@@ -542,6 +542,18 @@ Are you sure this is correct?", "Append Analysis to current Session", MessageBox
         /// <returns></returns>
         private bool Analyse(string FQFileName)
         {
+            if (Directory.Exists(@"C:\AudTemp"))
+            {
+                var fileList=Directory.EnumerateFiles(@"C:\AudTemp");
+                foreach(var file in fileList ?? Enumerable.Empty<string>())
+                {
+                    File.Delete(file);
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(@"C:\AudTemp");
+            }
             if (!File.Exists(FQFileName) || (new FileInfo(FQFileName).Length <= 0L)) return false;
             var bareFilename = Path.GetFileName(FQFileName);
             //if (file.Contains(@"\") && !file.EndsWith(@"\")) bareFilename = file.Substring(file.LastIndexOf(@"\") + 1);

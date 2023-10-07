@@ -26,7 +26,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 
 
-namespace Mm.ExportableDataGrid
+namespace Mm.MMExportableDataGrid
 {
     public static class DataGridExtensions
     {
@@ -36,7 +36,9 @@ namespace Mm.ExportableDataGrid
             _ = Task.Factory.StartNew(() => { DoExportUsingRefection(grid, exporter, exportPath); });
         }
 
+#pragma warning disable CA1502 // Avoid excessive complexity
         private static void DoExportUsingRefection(this DataGrid grid, IExporter exporter, string exportPath)
+#pragma warning restore CA1502 // Avoid excessive complexity
         {
             if (grid.ItemsSource == null || grid.Items.Count.Equals(0))
                 throw new InvalidOperationException("You cannot export any data from an empty DataGrid.");
@@ -111,7 +113,7 @@ namespace Mm.ExportableDataGrid
                                 ///
                                 var splitProperties = boundProperty.Split('.');
                                 var value = o;
-                                for (var i = 0; i < splitProperties.Count(); i++)
+                                for (var i = 0; i < splitProperties.Length; i++)
                                 {
                                     if (value == null)
                                     {
@@ -121,15 +123,15 @@ namespace Mm.ExportableDataGrid
 
                                     string[] splitArray = null;
                                     var index = 0;
-                                    if (splitProperties[i].Contains('['))
+                                    if (splitProperties[i].Contains('[',System.StringComparison.CurrentCulture))
                                     {
                                         splitArray = splitProperties[i].Split('[');
                                         splitProperties[i] = splitArray[0];
-                                        if (splitArray.Count() > 1)
+                                        if (splitArray.Length > 1)
                                         {
                                             var strIndex = splitArray[1].Replace('[', ' ');
                                             strIndex = strIndex.Replace(']', ' ').Trim();
-                                            int.TryParse(strIndex, out index);
+                                            if (!int.TryParse(strIndex, out index)) index = 0;
                                         }
                                     }
 
@@ -139,7 +141,7 @@ namespace Mm.ExportableDataGrid
                                     if (pi != null)
                                     {
                                         value = pi.GetValue(value, null);
-                                        if (splitArray != null && splitArray.Count() > 1)
+                                        if (splitArray != null && splitArray.Length > 1)
                                             value = (value as ObservableCollection<int>)[index];
                                     }
                                 }

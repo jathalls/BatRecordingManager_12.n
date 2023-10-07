@@ -1774,7 +1774,7 @@ mod-script-pipe=C:\\audacity-win-portable\\modules\\mod-script-pipe.dll");
             return result;
         }
 
-        private static readonly bool HasErred = false;
+        private static readonly bool HasErred;
 
         private static bool isFirstError = true;
 

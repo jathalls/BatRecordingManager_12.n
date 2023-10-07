@@ -392,13 +392,13 @@ namespace UniversalToolkit
             return ("");
         }
 
-        private double _bandwidth_mean = 0.0;
-        private double _duration_mean = 0.0;
-        private double _fEnd_mean = 0.0d;
-        private double _fHeel_mean = 0.0d;
-        private double _fKnee_mean = 0.0d;
-        private double _fPeak_mean = 0.0d;
-        private double _fStart_mean = 0.0d;
-        private double _interval_mean = 0.0d;
+        private double _bandwidth_mean;
+        private double _duration_mean;
+        private double _fEnd_mean;
+        private double _fHeel_mean;
+        private double _fKnee_mean;
+        private double _fPeak_mean;
+        private double _fStart_mean;
+        private double _interval_mean;
     }
 }

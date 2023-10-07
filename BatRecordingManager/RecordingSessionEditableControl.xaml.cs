@@ -81,7 +81,7 @@ namespace BatRecordingManager
         private ObservableCollection<string> _locationList = new ObservableCollection<string>();
         private ObservableCollection<string> _microphoneList = new ObservableCollection<string>();
         private ObservableCollection<string> _operatorList = new ObservableCollection<string>();
-        private bool appendWeather = false;
+        private bool appendWeather;
 
         private void FolderBrowseButton_Click(object sender, RoutedEventArgs e)
         {

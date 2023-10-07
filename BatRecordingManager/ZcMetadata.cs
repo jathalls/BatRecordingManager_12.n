@@ -146,7 +146,7 @@ namespace BatRecordingManager
             return (false);
         }
 
-        private bool isDataCached { get; set; } = false;
+        private bool isDataCached { get; set; }
 
         private string m_textHeader { get; set; } = "";
 

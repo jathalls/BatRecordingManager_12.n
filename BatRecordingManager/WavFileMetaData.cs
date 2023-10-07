@@ -142,7 +142,7 @@ namespace BatRecordingManager
         public string m_Temperature { get; private set; }
 
         public List<Meta> metaData { get; private set; } = new List<Meta>();
-        public bool success { get; set; } = false;
+        public bool success { get; set; }
 
         internal string FormattedText()
         {

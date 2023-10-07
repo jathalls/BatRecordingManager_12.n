@@ -59,7 +59,7 @@ namespace BatRecordingManager
             wpfPlot.AxesChanged += WpfPlot_AxesChanged;
         }
 
-        private bool AxisLock = false;
+        private bool AxisLock;
 
         private void WpfPlot_AxesChanged(object sender, EventArgs e)
         {/*
@@ -101,49 +101,173 @@ namespace BatRecordingManager
         private static List<SpectrogramWindow> spectrogramWindowList = new List<SpectrogramWindow>();
         //private static SpectrogramWindow spectrogramWindow { get; set; } = null;
 
-        internal static void Display(SegmentSonagrams segmentSonagram, PlayListItem pli = null)
+
+
+        internal static void Display(LabelledSegment segment, PlayListItem pli = null)
         {
-
-            if (spectrogramWindowList == null)
-            {
-                spectrogramWindowList = new List<SpectrogramWindow>();
-            }
-            var spectrogramWindow = new SpectrogramWindow();
-            spectrogramWindow.Closing += SpectrogramWindowInstance_Closing;
-            spectrogramWindow.Closed += SpectrogramWindowInstance_Closed;
-            spectrogramWindow.segmentSonagram = segmentSonagram;
-
-
-            spectrogramWindow.heatMap = null;
-            spectrogramWindow.RegenSonagram();
-
-
-
+            if (segment == null && pli == null) return;
             
 
-            spectrogramWindow.Show();
-            spectrogramWindow.Update();
 
-            spectrogramWindow.setPlayListItem(pli);
+            string filename = segment?.Recording.GetFileName()??pli?.filename;
+            if (!string.IsNullOrWhiteSpace(filename) && File.Exists(filename))
+            {
+                var start = segment?.StartOffset??pli.startOffset;
+                TimeSpan end = (segment?.EndOffset??(pli?.startOffset+pli?.playLength)).Value;
+                var spectrogram = new Spectrogram(filename, start, end, 1024, 512);
+                Debug.WriteLine("@@@@@ Spectrogram created");
 
-            spectrogramWindowList.Add(spectrogramWindow);
 
+                var spectrogramWindow = new SpectrogramWindow();
+                spectrogramWindow.segment = segment;
+                spectrogramWindow.spectrogram = spectrogram;
+                //spectrogramWindow.segmentSonagram = null;
+                spectrogramWindow.Closing += SpectrogramWindowInstance_Closing;
+                spectrogramWindow.Closed += SpectrogramWindowInstance_Closed;
+                spectrogramWindow.heatMap = null;
+                spectrogramWindow.RegenSonagram();
 
+                Debug.WriteLine("Regen returned - About to show spectrogram window");
+                spectrogramWindow.Show();
+                Debug.WriteLine("Spectrogram window displayed");
+                //spectrogramWindow.Update();
+
+                spectrogramWindow.setPlayListItem(null);
+
+                spectrogramWindowList.Add(spectrogramWindow);
+
+            }
 
 
         }
+
+        internal static void Display(List<LabelledSegment> segmentSelection)
+        {
+            if (segmentSelection == null || segmentSelection.Count == 0) return;
+            if(spectrogramWindowList!=null && spectrogramWindowList.Count > 0)
+            {
+                foreach(var sw in spectrogramWindowList)
+                {
+                    sw.Close();
+                }
+                spectrogramWindowList.Clear();
+            }
+
+            foreach(var segment in segmentSelection)
+            {
+                Display(segment);
+            }
+        }
+
+        private void Spectrogram_SpectrumCompleted(object sender, EventArgs e)
+        {
+            var lims=wpfPlot.Plot.GetAxisLimits();
+            heatMap.Update(data);
+            wpfPlot.Plot.SetAxisLimits(lims);
+            wpfPlot.Refresh();
+            var dims = wpfPlot.Plot.XAxis.Dims;
+            UpdateLabelPlot(dims.Min, durationSecs);
+            Debug.WriteLine("@@@@@ Spectrum Completed and LabelPlot updated");
+        }
+
+        private double durationSecs { get; set; }
+
+        private async void Spectrogram_SectionCompletedEvent(object sender, spectrumEventArgs e)
+        {
+            Debug.WriteLine("@@@@@ Spectrogram section completed");
+            bool isFirst = (data == null);
+            double[,] newData;
+            durationSecs = e.durationSecs;
+            if (isFirst)
+            {
+                data = new double[e.spectrogram.GetLength(0), e.totalFFTs ];
+                //data = e.spectrogram;
+                int pos = 0;
+                for(int i=e.dataStart;i<e.dataEnd && i<data.GetLength(1); i++)
+                {
+                    for(int f = 0; f < e.spectrogram.GetLength(0); f++)
+                    {
+                        data[f, i] = e.spectrogram[f, pos];
+                    }
+                    pos++;
+                }
+
+                Update(withLabels: false);
+                Debug.WriteLine("@@@@@ Updated");
+            }
+            else
+            {
+                
+
+                int pos = 0;
+                for (int i = e.dataStart; i < e.dataEnd && i < data.GetLength(1); i++)
+                {
+                    for (int f = 0; f < e.spectrogram.GetLength(0); f++)
+                    {
+                        data[f, i] = e.spectrogram[f, pos];
+                    }
+                    pos++;
+                }
+
+                asyncUpdate();
+                
+            }
+            
+            
+            
+            
+
+        }
+
+        private async void asyncUpdate()
+        {
+            var lims = wpfPlot.Plot.GetAxisLimits();
+            await heatmapUpdateAsync();
+            //heatMap.Update(data);
+            wpfPlot.Plot.SetAxisLimits(lims);
+            wpfPlot.Refresh();
+            Debug.WriteLine("@@@@@ heatmap Updated and wpfPlot Refreshed");
+        }
+
+        public Task heatmapUpdateAsync() => Task.Run(() =>
+        {
+            heatMap.Update(data);
+        });
+
+        private Spectrogram _spectrogram;
+
+        private Spectrogram spectrogram
+        {
+            get { return _spectrogram; }
+            set
+            {
+                _spectrogram = value;
+                _spectrogram.SpectrumCompleted -= Spectrogram_SpectrumCompleted;
+                _spectrogram.SpectrumCompleted += Spectrogram_SpectrumCompleted;
+
+                _spectrogram.SectionCompletedEvent -= Spectrogram_SectionCompletedEvent;
+                _spectrogram.SectionCompletedEvent += Spectrogram_SectionCompletedEvent;
+
+                Debug.WriteLine("@@@@@ Spectrogram assigned");
+
+            }
+        }
+
+        
 
         //private double[,] rawData;
         private double[,] data;
         private ScottPlot.Plottable.Heatmap heatMap;
 
-        private SegmentSonagrams segmentSonagram = null;
+        
+
+        private LabelledSegment segment { get; set; }
 
         private static void SpectrogramWindowInstance_Closed(object sender, EventArgs e)
         {
             SpectrogramWindow spectrogramWindow = sender as SpectrogramWindow;
             Debug.WriteLine("Spectrogram Window closed");
-            spectrogramWindow?.segmentSonagram.Close();
+            //spectrogramWindow?.segmentSonagram?.Close();
             if (spectrogramWindow.currentPlayListItem != null)
             {
                 spectrogramWindow.currentPlayListItem.Close();
@@ -194,11 +318,14 @@ namespace BatRecordingManager
             {
                 newLabel += $"\n{brack.Label}";
             }
-            while (newLabel.StartsWith("\n")) { newLabel=newLabel.Substring(1); }
-            segmentSonagram.segment.Comment = newLabel;
-            segmentSonagram.segment.Comment = newLabel;
-            DBAccess.UpdateLabelledSegment(segmentSonagram.segment);// fails to update the bat list
-            segmentSonagram.segment.CommentModified();
+            while (newLabel.StartsWith("\n", System.StringComparison.CurrentCulture)) { newLabel = newLabel.Substring(1); }
+            if (segment != null)
+            {
+                segment.Comment = newLabel;
+                
+                DBAccess.UpdateLabelledSegment(segment);// fails to update the bat list
+                segment.CommentModified();
+            }
             
         }
 
@@ -210,19 +337,24 @@ namespace BatRecordingManager
             this.Close();
         }
 
-        private double xMin = 0.0d;
-        private double xMax = 0.0d;
-        private double yMin = 0.0d;
-        private double yMax = 0.0d;
-        private double zoomedYmax = 0.0d;
-        private Crosshair ch2 = null;
+        private double xMin;
+        private double xMax;
+        private double yMin;
+        private double yMax;
+        private double zoomedYmax;
+        private Crosshair ch2;
         private static (double x, double y) staticPos = (0, 0);
-        private Text txt = null;
-        
-        
-        private void Update()
+        private Text txt;
+
+
+        private void Update(bool withLabels=true)
         {
-            if (data == null) return;
+            if (data == null)
+            {
+                Debug.WriteLine("EEEEEEEE No data to Update the plot");
+                return;
+            }
+                
             using (new WaitCursor())
             {
 
@@ -235,16 +367,29 @@ namespace BatRecordingManager
                 //heatMap.Update(data, max: max, min: min);
 
                 xMin = 0.0d;
-                xMax = (segmentSonagram?.duration.TotalSeconds) ?? 1.0d;
+                xMax = durationSecs;
 
                 yMin = 0.0d;
-                yMax = ((double)((segmentSonagram?.SampleRate) ?? 384000.0d)) / 2000.0d;
+                yMax =  (spectrogram?.sampleRate??384000) / 2000.0d;
                 zoomedYmax = yMax;
 
                 //sonagramGenerator.GetRange(out double mindB, out double maxdB, out double rangedB);
 
                 heatMap = wpfPlot.Plot.AddHeatmap(data, ScottPlot.Drawing.Colormap.GrayscaleR, lockScales: false);
-                heatMap.Update(data, max: maxdB, min: mindB);
+                Debug.WriteLine("Heatmap added");
+                //heatMap.Update(data, max: maxdB, min: mindB);
+                Debug.WriteLine($"heatmap Updataed {data.GetLength(0)} {data.GetLength(1)}");
+
+                disableSliders = true;
+                var cmMax = heatMap.ColormapMax;
+                var cmMin = heatMap.ColormapMin;
+                GainSlider.Maximum = (cmMax-cmMin)*2;
+                GainSlider.Minimum = (cmMax-cmMin)/2;
+                GainSlider.Value = (cmMax - cmMin);
+                OffsetSlider.Maximum = cmMax * 2;
+                OffsetSlider.Minimum = cmMin;
+                OffsetSlider.Value = cmMax;
+                disableSliders = false;
                 
 
                 var cb = wpfPlot.Plot.AddColorbar(heatMap);
@@ -287,21 +432,45 @@ namespace BatRecordingManager
                 wpfPlot.Plot.Grid(onTop: true);
                 heatMap.Smooth = SmoothingCheckBox.IsChecked ?? false;
 
-                string title = segmentSonagram?.fileName ?? "";
-                if (segmentSonagram?.segment != null)
+                string title = spectrogram.fileName;
+                if (segment != null)
                 {
-                    title += $": {segmentSonagram.segment.StartDateTime} for {segmentSonagram.segment.Duration()?.TotalSeconds.ToString() ?? "?"} secs";
+                    title += $": {segment.StartDateTime} for {segment.Duration()?.TotalSeconds.ToString() ?? "?"} secs";
                 }
+                
 
                 wpfPlot.Plot.Title(title+"\n'");
 
-                var dims = wpfPlot.Plot.XAxis.Dims;
+                double zoom = durationSecs / 5.0d;
+                
+                Debug.WriteLine($"dur={durationSecs},  zoom={zoom}, pre={wpfPlot.Plot.XAxis.Dims.Min},{wpfPlot.Plot.XAxis.Dims.Max}");
+                
+                wpfPlot.Plot.AxisZoom(xFrac: zoom);
+                Debug.WriteLine($"postzoom={wpfPlot.Plot.XAxis.Dims.Min},{wpfPlot.Plot.XAxis.Dims.Max}");
 
-                UpdateLabelPlot(dims.Min, dims.Max);
+                //double pan = -wpfPlot.Plot.XAxis.Dims.Min;
+                double pan = 0.0d;
+                //wpfPlot.Plot.AxisPan(dx: pan);
+                //var dims = wpfPlot.Plot.XAxis.Dims;
+                var Min = 0.0d;
+                var Max = Math.Min(durationSecs, 5.0d);
+                wpfPlot.Plot.SetAxisLimitsX(Min, Max);
+                Debug.WriteLine($"postpan={pan} to {wpfPlot.Plot.XAxis.Dims.Min},{wpfPlot.Plot.XAxis.Dims.Max}");
+                
+
+                
+                if (withLabels)
+                {
+                    var dims = wpfPlot.Plot.XAxis.Dims;
+                    UpdateLabelPlot(dims.Min, durationSecs);
+                }
                 wpfPlot.Refresh();
+                Debug.WriteLine("Plot refreshed - Update complete");
             }
             
         }
+
+        bool disableSliders = false;
 
         public static string customTickFormatter(double position)
         {
@@ -324,10 +493,10 @@ namespace BatRecordingManager
         {
             
 
-            if (segmentSonagram != null)
+            if ( spectrogram!=null)
             {
-                var startOffset=segmentSonagram.startOffset;
-                var file=segmentSonagram.fileName;
+                var startOffset = spectrogram.start.TotalSeconds;
+                var file=spectrogram.fileName;
                 var textFile = Path.ChangeExtension(file, ".TXT");
                 if (!File.Exists(textFile))
                 {
@@ -335,21 +504,24 @@ namespace BatRecordingManager
                     return;
                 }
 
-                TimeSpan displayedStartInFile = TimeSpan.FromSeconds(startOffset) + TimeSpan.FromSeconds(xMin);
-                TimeSpan displayedEndInFile = displayedStartInFile + TimeSpan.FromSeconds(xMax - xMin);
+                TimeSpan displayedStartInFile = TimeSpan.FromSeconds(startOffset);
+                TimeSpan displayedEndInFile = displayedStartInFile + TimeSpan.FromSeconds(xMax);
                 wpfPlot.Plot.YAxis.LockLimits(false);
                 var lims = wpfPlot.Plot.GetAxisLimits();
                 wpfPlot.Plot.SetAxisLimits(lims.XMin, lims.XMax, lims.YMin - 60, lims.YMax);
+                // set to allow space for the label track below the spectrogram track
+
+
                 List<(TimeSpan start,TimeSpan end,string label)> labelList = null;
                 Debug.WriteLine($"Labels:- dispStart={displayedStartInFile}, dispEnd={displayedEndInFile} Lims={lims.YMin},{lims.YMax}");
-                if (segmentSonagram.segment == null)
+                if (segment == null)
                 {
                     labelList = GetLabels(textFile, displayedStartInFile, displayedEndInFile);
                 }
                 else
                 {
                     labelList = new List<(TimeSpan start, TimeSpan end, string label)>();
-                    labelList.Add(new(displayedStartInFile, displayedEndInFile, segmentSonagram.segment.Comment));
+                    labelList.Add(new(displayedStartInFile, displayedEndInFile, segment.Comment));
                 }
                 labelList = labelList.OrderBy(listItem => listItem.start).ToList();
                 List<TimeSpan> rowLimits = new List<TimeSpan>();
@@ -446,16 +618,16 @@ namespace BatRecordingManager
             return (labels);
         }
 
-        private Crosshair ch = null;
+        private Crosshair ch;
 
-       
+
 
         private void OffsetSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (OffsetSlider != null && heatMap != null)
+            if (OffsetSlider != null && heatMap != null && !disableSliders)
             {
-                var max= (OffsetSlider?.Value) ?? 60.0d;
-                var min = max - ((GainSlider?.Value) ?? 96.0d);
+                var max= (OffsetSlider?.Value) ;
+                var min = max - ((GainSlider?.Value) );
                 heatMap.Update(data, max: max, min: min);
                 wpfPlot.Refresh();
             }
@@ -464,10 +636,10 @@ namespace BatRecordingManager
         private void GainSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             
-            if (GainSlider != null && OffsetSlider != null && heatMap != null)
+            if (GainSlider != null && OffsetSlider != null && heatMap != null && !disableSliders)
             {
-                var max = (OffsetSlider?.Value) ?? 60.0d;
-                var min = max - ((GainSlider?.Value) ?? 96.0d);
+                var max = (OffsetSlider?.Value) ;
+                var min = max - ((GainSlider?.Value) );
                 heatMap.Update(data, max: max, min: min);
                 wpfPlot.Refresh();
             }
@@ -501,24 +673,29 @@ namespace BatRecordingManager
             RegenSonagram();
         }
 
-        private void RegenSonagram() 
-        { 
+        /// <summary>
+        /// Recalculates the spectrogram using segmentSonagram or Spectrogram as appropriate
+        /// </summary>
+        private async void RegenSonagram()
+        {
+            Debug.WriteLine("Regen");
             //Debug.WriteLine($"FT Size changed to {FtSizeListbox.SelectedItem.ToString()}");
             int ftSize = 1024;
             int ftAdvance = 512;
+
+            data = null;
 
             if (FtSizeListbox == null || FtSizeListbox.SelectedIndex < 0) return;
 
             string selection = (FtSizeListbox?.SelectedItem as ComboBoxItem)?.Content?.ToString();
             if (selection == null) return;
-            int.TryParse(selection, out ftSize);
-            if (ftSize <= 0) return;
+            if (!int.TryParse(selection, out ftSize) || ftSize <= 0) return;
             ftAdvance = ftSize / 2;
 
             selection = (FtAdvanceListbox?.SelectedItem as ComboBoxItem)?.Content?.ToString();
             if (selection == null) return;
-            if(selection.EndsWith("%"))selection=selection.Substring(0, selection.Length - "%".Length);
-            double.TryParse(selection, out double ftAdvancePC);
+            if (selection.EndsWith("%", System.StringComparison.CurrentCulture)) selection = selection.Substring(0, selection.Length - "%".Length);
+            if (!double.TryParse(selection, out double ftAdvancePC)) ftAdvancePC = ftSize / 2;
             switch (ftAdvancePC)
             {
                 case 12.5d: ftAdvance = ftSize / 8; break;
@@ -529,21 +706,22 @@ namespace BatRecordingManager
                 default: return;
             }
 
-            using (new WaitCursor())
+
+
+            if (spectrogram != null)
             {
+                Debug.WriteLine("@@@@@ awaiting GetSpectrogramAsync");
+                int errcode=await spectrogram?.GetSpectrogramAsync();
+                Debug.WriteLine($"@@@@@ returned from GetSpectrogramAsync {errcode}");
 
-
-                data = segmentSonagram?.Regen(ftSize, ftAdvance);
-
-
-
-
-
-                if (data != null && heatMap != null)
-                {
-                    Update();
-                }
             }
+
+
+
+
+
+
+
         }
 
         /// <summary>
@@ -585,21 +763,21 @@ namespace BatRecordingManager
             currentPlayListItem = null;
         }
 
-        private PlayListItem currentPlayListItem { get; set; } = null;
+        private PlayListItem currentPlayListItem { get; set; }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             var lims = wpfPlot.Plot.GetAxisLimits();
-            if (segmentSonagram == null) return;
-            string filename = segmentSonagram.segment?.Recording?.GetFileName();
+            if (segment == null) return;
+            string filename = segment?.Recording?.GetFileName();
             if (string.IsNullOrWhiteSpace(filename))
             {
-                filename = segmentSonagram.fileName;
+                filename = spectrogram?.fileName;
             }
-            var segmentOffset = segmentSonagram.segment?.StartOffset;
+            var segmentOffset = segment?.StartOffset;
             if (segmentOffset == null)
             {
-                segmentOffset = TimeSpan.FromSeconds(segmentSonagram.startOffset);
+                segmentOffset = TimeSpan.FromSeconds(0);
             }
             if (!string.IsNullOrWhiteSpace(filename) && File.Exists(filename))
             {
@@ -609,7 +787,7 @@ namespace BatRecordingManager
                 if (currentPlayListItem == null)
                 {
                     var pli = PlayListItem.Create(filename, offset, duration, segmentOffset ?? offset,
-                        TimeSpan.FromSeconds(segmentSonagram?.durationSecs ?? lims.XSpan),
+                        (segment?.Duration())??TimeSpan.FromSeconds(lims.XSpan),
                          wfr.TotalTime, filename, null, hasSpectrogram: true);
                     setPlayListItem(pli);
                     
@@ -865,23 +1043,28 @@ namespace BatRecordingManager
         /// <param name="e"></param>
         private void wpfPlot_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
+
             var mouseAt = wpfPlot.GetMouseCoordinates();
-            ch.X = mouseAt.x;
-            ch.Y = mouseAt.y;
+            
             if (ch2 != null && txt!=null)
             {
+                ch.X = mouseAt.x;
+                ch.Y = mouseAt.y;
+
                 var dx=ch.X - ch2.X;
-                var dy=ch.Y - ch2.Y;
+                var dy=Math.Abs(ch.Y - ch2.Y);
                 txt.X = ch.X;
                 txt.Y = ch.Y;
                 
-                txt.Label = dx < 1 ? $"   {dx*1000:F0}ms, {dy:F1}kHz" :
-                    $"{dx:F3}s, {dy:F1}kHz";
-                
+                txt.Label = dx < 1 ? $"   {dx*1000:F0}ms, {ch.Y:F1}kHz ({dy:F1}kHz)" :
+                    $"{dx:F3}s, {ch.Y:F1}kHz ({dy:F1}kHz)";
+
+                wpfPlot.Refresh();
+                e.Handled = false;
+
             }
 
-            wpfPlot.Refresh();
-            e.Handled = false;
+            
 
 
         }
@@ -907,11 +1090,11 @@ namespace BatRecordingManager
         private Limits GetDisplayedLimits()
         {
             Limits limits = new Limits();
-            limits.filename = segmentSonagram.fileName;
+            limits.filename = spectrogram?.fileName;
             var plotLimits=wpfPlot.Plot.GetAxisLimits();
             limits.fMin = plotLimits.YMin;
             limits.fMax = plotLimits.YMax;
-            TimeSpan start = TimeSpan.FromSeconds(segmentSonagram.startOffset + plotLimits.XMin);
+            TimeSpan start = TimeSpan.FromSeconds(segment?.StartOffset.TotalSeconds??0.0d + plotLimits.XMin);
             limits.startInFile = start;
             limits.length = TimeSpan.FromSeconds(plotLimits.XMax - plotLimits.XMin);
             return (limits);
@@ -944,9 +1127,9 @@ namespace BatRecordingManager
     public class Limits
     {
         public string filename { get; set; } = "";
-        public TimeSpan startInFile { get; set; } = new TimeSpan();
-        public TimeSpan length { get; set; } = new TimeSpan();
-        public double fMin { get; set; } = 0.0d;
+        public TimeSpan startInFile { get; set; }
+        public TimeSpan length { get; set; }
+        public double fMin { get; set; }
         public double fMax { get; set; } = 192.0d;
 
     }
